@@ -44,14 +44,19 @@ func (this *DriveController) Get(writer http.ResponseWriter, request *http.Reque
     if (len(values) == 0) {
         var drives []*model.Drive
         drives, err = this.model.GetDrives()
+        for _, drive := range drives {
+          drive.Password = ""
+        }
         jsonResult, err = json.Marshal(drives)
+
     // Return specific drive.
     } else {
         id := values.Get("id")
         if (len(id) != 0) {
-            var article *model.Drive
-            article, err = this.model.GetDrive(id)
-            jsonResult, err = json.Marshal(article)
+            var drive *model.Drive
+            drive, err = this.model.GetDrive(id)
+            drive.Password = ""
+            jsonResult, err = json.Marshal(drive)
         } else {
             http.Error(writer, "Invalid request - 'id' field missing.", http.StatusBadRequest)
         }
@@ -140,11 +145,16 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
         http.Error(writer, "Invalid request: 'id' missing.", http.StatusBadRequest)
         return
     }
-    // Get currently saved article from database.
+    // Get currently saved drive from database.
     drive, err := this.model.GetDrive(parameters.Id)
     if err != nil {
         http.Error(writer, err.Error(), http.StatusInternalServerError)
         return
+    }
+
+    if drive.Password != parameters.Password {
+      http.Error(writer, "Invalid password.", http.StatusBadRequest)
+      return
     }
 
     // Update values.
@@ -177,6 +187,16 @@ func (this *DriveController) Delete(writer http.ResponseWriter, request *http.Re
     if len(parameters.Id) == 0 {
         http.Error(writer, "Invalid request: 'id' missing.", http.StatusBadRequest)
         return
+    }
+    // Check password.
+    drive, err := this.model.GetDrive(parameters.Id)
+    if err != nil {
+        http.Error(writer, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    if drive.Password != parameters.Password {
+      http.Error(writer, "Invalid password.", http.StatusBadRequest)
+      return
     }
     // Tell model to remove drive.
     err = this.model.RemoveDrive(parameters.Id)
