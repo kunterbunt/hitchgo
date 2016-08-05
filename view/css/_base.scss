@@ -1,0 +1,40 @@
+$phone:   "only screen and (max-width: 529px)";
+$tablet:  "only screen and (min-width: 530px) and (max-width: 1024px)";
+$desktop: "only screen and (min-width: 1025px)";
+$intro-background: #d5dbea;
+$accent-color: #FF6E40;
+
+* {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+body, html, .mdl-layout, .mdl-layout__content, .page-content {
+  // height: auto;
+  color: #424242;
+}
+.mdl-grid {
+  p {
+    font-size: 120%;
+  }
+}
+p, span, h1, h2, h3, h4, figcaption {
+  font-family: "Roboto", "Open Sans", sans-serif;
+}
+a {
+  text-decoration: none;
+}
+.text--centered {
+  text-align: center;
+}
+footer {
+  .mdl-button {
+    span {
+      color: black;
+    }
+    i {
+      line-height: 36px;
+      color: black;
+    }
+  }
+}

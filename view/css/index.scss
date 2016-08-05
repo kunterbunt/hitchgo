@@ -1,0 +1,23 @@
+@import "base";
+@import "mixins";
+
+.mdl-layout__content {
+  height: calc(100% - 64px);
+  overflow-x: auto;
+  .page-content {
+    height: 100%;
+    .map-grid {
+      height: 50%;
+      #map--wrapper {
+        height: 100%;
+        #map--canvas {
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+    #drives-table {
+      width: 100%;
+    }
+  }
+}

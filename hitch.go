@@ -6,6 +6,7 @@ import (
   "runtime"
   "github.com/kunterbunt/hitchgo/model"
   "github.com/kunterbunt/hitchgo/controller"
+  "github.com/kunterbunt/fileserver/server"
 )
 
 func main() {
@@ -16,11 +17,15 @@ func main() {
   if !err {
     panic("No caller information")
   }
-  // Instantiate server.
-  server := controller.NewServer(path.Dir(hitchgoLocation))
+  // Instantiate REST API server.
+  restApiServer := controller.NewServer(path.Dir(hitchgoLocation))
   // Register REST controller.
-  server.RegisterController("/drives", "api", controller.NewDriveController(mongoDb))
+  restApiServer.RegisterController("/drives", "api", controller.NewDriveController(mongoDb))
+  // Instantiate HTML fileserver.
+  htmlServer := server.NewServer(path.Dir(hitchgoLocation), 3000)
+  htmlServer.ServeFromDirectory("/", "view")
+  go htmlServer.ListenAndServe()
+
   fmt.Println("Hitch ready to go!")
-  server.ServeFromDirectory("/", "view")
-  server.StartListen()
+  restApiServer.StartListen()
 }

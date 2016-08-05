@@ -1,1 +1,65 @@
-Yoyo!
+<!doctype html>
+<html>
+  <head>
+    <script src="jquery-3.1.0.min.js"></script>
+    <title>Slow Food Mitfahrzentrale</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MDL + MDL Icons -->
+    <script src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.indigo-pink.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+  </head>
+
+  <body>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title">Slow Food Mitfahrzentrale</span>
+        <div class="mdl-layout-spacer"></div>
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://www.slowfood.de/">Slow Food</a>
+          <a class="mdl-navigation__link" href="http://slowfoodyouth.de/">Slow Food Youth</a>
+          <a class="mdl-navigation__link" href="mailto:sebastian@slowfoodyouthh.de">Fehler melden</a>
+        </nav>
+      </div>
+    </header>
+    <main class="mdl-layout__content">
+      <div class="page-content">
+        <div class="map-grid mdl-grid">
+          <div id="map--wrapper" class="mdl-cell mdl-cell--12-col">
+            <div id="map--canvas"></div>
+          </div>
+        </div>
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+            <table id="drives-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+              <thead>
+                <tr>
+                  <th class="mdl-data-table__cell--non-numeric">Fahrer(in)</th>
+                  <th>Abfahrtsort</th>
+                  <th>Zwischenstops</th>
+                  <th>Zielort</th>
+                  <th>freie Plätze</th>
+                  <th>Kontakt</th>
+                  <th>zuletzt geändert am</th>
+                  <th>eingestellt am</th>
+                  <th></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="drives-table--body">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDdQ_nbRIusKetPFIFHVQvncVKTweeN3iY&callback=initMap" async defer></script>
+  </body>
+</html>
