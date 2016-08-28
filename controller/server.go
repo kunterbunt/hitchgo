@@ -33,6 +33,7 @@ func (server Server) RegisterController(route string, subdomain string, controll
     server.router.Host(host).Methods("POST").Path(route).HandlerFunc(controller.Post)
     server.router.Host(host).Methods("PUT").Path(route).HandlerFunc(controller.Put)
     server.router.Host(host).Methods("DELETE").Path(route).HandlerFunc(controller.Delete)
+    server.router.Host(host).Methods("OPTIONS").Path(route).HandlerFunc(controller.Options)
 }
 
 /**

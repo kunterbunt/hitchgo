@@ -6,7 +6,7 @@ import (
   "runtime"
   "github.com/kunterbunt/hitchgo/model"
   "github.com/kunterbunt/hitchgo/controller"
-  "github.com/kunterbunt/fileserver/server"
+  // "github.com/kunterbunt/fileserver/server"
 )
 
 func main() {
@@ -22,9 +22,9 @@ func main() {
   // Register REST controller.
   restApiServer.RegisterController("/drives", "api", controller.NewDriveController(mongoDb))
   // Instantiate HTML fileserver.
-  htmlServer := server.NewServer(path.Dir(hitchgoLocation), 3000)
-  htmlServer.ServeFromDirectory("/", "view")
-  go htmlServer.ListenAndServe()
+  // htmlServer := server.NewServer(path.Dir(hitchgoLocation), 3000)
+  // htmlServer.ServeFromDirectory("/", "view")
+  // go htmlServer.ListenAndServe()
 
   fmt.Println("Hitch ready to go!")
   restApiServer.StartListen()
