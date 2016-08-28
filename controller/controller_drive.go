@@ -28,7 +28,7 @@ func (this *DriveController) errorMsg(writer http.ResponseWriter, message string
 }
 
 func setHeaders(writer http.ResponseWriter) {
-  writer.Header().Set("Content-Type", "application/json")
+  // writer.Header().Set("Content-Type", "application/json")
   writer.Header().Set("Access-Control-Allow-Origin", "*")
   writer.Header().Set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE")
 }

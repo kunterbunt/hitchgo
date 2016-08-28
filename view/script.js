@@ -69,7 +69,7 @@ function editDrive(index) {
       ],\
       "to": "Würzburg",\
       "seatsleft": 5,\
-      "password":' + password + ',\
+      "password":"' + password + '",\
       "dateCreated": "2002-10-02T17:00:00+02:00",\
       "dateModified": "2002-10-02T17:00:00+02:00"\
   }',
@@ -77,6 +77,7 @@ function editDrive(index) {
         console.log(result);
       },
       error: function(result) {
+        showSnackbarMsg("Sie haben ein falsches Passwort eingegeben.")
         console.debug("Error: " + JSON.stringify(result, null, 4));
       }
     });
@@ -85,4 +86,18 @@ function editDrive(index) {
 
 function deleteDrive(index) {
   console.log(index);
+}
+
+function showSnackbarMsg(message) {
+  var snackbarContainer = document.querySelector('#snackbar');
+  var handler = function(event) {
+    // React to button press.
+  };
+  var data = {
+    message: message,
+    timeout: 4000,
+    actionHandler: handler,
+    actionText: 'Okay'
+  };
+  snackbarContainer.MaterialSnackbar.showSnackbar(data);
 }
