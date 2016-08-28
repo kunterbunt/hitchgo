@@ -27,6 +27,12 @@ func (this *DriveController) errorMsg(writer http.ResponseWriter, message string
   this.loggerErr.Println(message)
 }
 
+func setHeaders(writer http.ResponseWriter) {
+  writer.Header().Set("Content-Type", "application/json")
+  writer.Header().Set("Access-Control-Allow-Origin", "*")
+  writer.Header().Set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE")
+}
+
 /**
 * HTTP request parameters.
 */
@@ -45,6 +51,7 @@ func (this *DriveController) parseHttpParameters(request *http.Request) (paramet
 
 func (this *DriveController) Get(writer http.ResponseWriter, request *http.Request) {
     this.logger.Println("GET Request")
+    setHeaders(writer)
     // Get parameter values from URL.
     values := request.URL.Query()
     // These two variables will propagate to the end.
@@ -75,14 +82,13 @@ func (this *DriveController) Get(writer http.ResponseWriter, request *http.Reque
     if err != nil {
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
     } else {
-        writer.Header().Set("Content-Type", "application/json")
-        writer.Header().Set("Access-Control-Allow-Origin", "*")
         writer.Write(jsonResult)
     }
 }
 
 func (this *DriveController) Post(writer http.ResponseWriter, request *http.Request) {
     this.logger.Println("POST Request")
+    setHeaders(writer)
     parameters, err := this.parseHttpParameters(request)
     if err != nil {
         this.errorMsg(writer, "Error parsing HTTP request body: " + err.Error(), http.StatusBadRequest)
@@ -140,13 +146,13 @@ func (this *DriveController) Post(writer http.ResponseWriter, request *http.Requ
     if err != nil {
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
     } else {
-        writer.Header().Set("Access-Control-Allow-Origin", "*")
         writer.Write([]byte("Drive successfully saved."))
     }
 }
 
 func (this *DriveController) Put(writer http.ResponseWriter, request *http.Request) {
     this.logger.Println("PUT Request")
+    setHeaders(writer)
     parameters, err := this.parseHttpParameters(request)
     if err != nil {
         this.errorMsg(writer, "Error parsing HTTP request body: " + err.Error(), http.StatusBadRequest)
@@ -161,7 +167,6 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
     drive, err := this.model.GetDrive(parameters.Id)
     if err != nil {
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
-
         return
     }
 
@@ -185,13 +190,13 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
     if err != nil {
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
     } else {
-        writer.Header().Set("Access-Control-Allow-Origin", "*")
         writer.Write([]byte("Successfully updated."))
     }
 }
 
 func (this *DriveController) Delete(writer http.ResponseWriter, request *http.Request) {
     this.logger.Println("DELETE Request")
+    setHeaders(writer)
     parameters, err := this.parseHttpParameters(request)
     if err != nil {
         this.errorMsg(writer, "Error parsing HTTP request body: " + err.Error(), http.StatusBadRequest)
@@ -217,14 +222,12 @@ func (this *DriveController) Delete(writer http.ResponseWriter, request *http.Re
     if err != nil {
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
     } else {
-        writer.Header().Set("Access-Control-Allow-Origin", "*")
         writer.Write([]byte("Drive successfully removed."))
     }
 }
 
 func (this *DriveController) Options(writer http.ResponseWriter, request *http.Request) {
     this.logger.Println("OPTIONS Request")
-    writer.Header().Set("Access-Control-Allow-Origin", "*")
-    writer.Header().Set("Access-Control-Allow-Methods", "PUT, POST, DELETE")
+    setHeaders(writer)
     writer.Write([]byte("Hi there."))
 }

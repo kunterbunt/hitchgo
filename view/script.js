@@ -54,30 +54,33 @@ function fillTable() {
 }
 
 function editDrive(index) {
-  $.ajax({
-    url: url,
-    type: 'PUT',
-    data: '{\
-    "id":"57a4e736d6194c39b5000001",\
-    "author": "Marie",\
-    "contact": "marie@slowfoodyouthh.de",\
-    "from": "München",\
-    "stops": [\
-      ""\
-    ],\
-    "to": "Würzburg",\
-    "seatsleft": 5,\
-    "password": "supersecret",\
-    "dateCreated": "2002-10-02T17:00:00+02:00",\
-    "dateModified": "2002-10-02T17:00:00+02:00"\
-}',
-    success: function(result) {
-      console.log(result);
-    },
-    error: function(result) {
-      console.debug("Error: " + JSON.stringify(result, null, 4));
-    }
-  });
+  var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
+  if (password != null) {
+    $.ajax({
+      url: url,
+      type: 'PUT',
+      data: '{\
+      "id":"57a4e736d6194c39b5000001",\
+      "author": "Marie",\
+      "contact": "marie@slowfoodyouthh.de",\
+      "from": "München",\
+      "stops": [\
+        ""\
+      ],\
+      "to": "Würzburg",\
+      "seatsleft": 5,\
+      "password":' + password + ',\
+      "dateCreated": "2002-10-02T17:00:00+02:00",\
+      "dateModified": "2002-10-02T17:00:00+02:00"\
+  }',
+      success: function(result) {
+        console.log(result);
+      },
+      error: function(result) {
+        console.debug("Error: " + JSON.stringify(result, null, 4));
+      }
+    });
+  }
 }
 
 function deleteDrive(index) {
