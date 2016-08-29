@@ -72,7 +72,7 @@ func (this *DriveController) Get(writer http.ResponseWriter, request *http.Reque
     if (len(values) == 0) {
         var drives []*model.Drive
         drives, err = this.model.GetDrives()
-        for _, drive := range drives {
+        for _, drive := range drives {          
           drive.Password = ""
         }
         jsonResult, err = json.Marshal(drives)

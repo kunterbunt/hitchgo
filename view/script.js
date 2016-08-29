@@ -35,7 +35,7 @@ function fillTable() {
       <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to'] + "' disabled='disabled'></td>\
       <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
       <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
-      <td class='drives-table--dateCreated mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateCreated']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
+      <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateDue']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
       <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateModified' value='" + moment(drives[i]['dateModified']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
       <td class='drives-table--id hide'><input size='0' type='text' name='seatsleft' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
       ");
@@ -123,7 +123,7 @@ function setTextFields(index, disabled) {
   for (let i = 0; i < rows.length; i++) {
     if (i == index) {
       var currentField = currentRow.children().first();
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 7; i++) {
         currentField.children().first().prop('disabled', disabled);
         currentField = currentField.next();
       }
@@ -150,8 +150,7 @@ function gatherInput(index) {
     to: row.children(".drives-table--to").first().children().first().val(),
     seatsleft: parseInt(row.children(".drives-table--seatsleft").first().children().first().val(), 10),
     contact: row.children(".drives-table--contact").first().children().first().val(),
-    dateCreated: moment(row.children(".drives-table--dateCreated").first().children().first().val(), "YYYY-MM-DD[T]HH:mm:ss[+02:00]"),
-    dateModified: moment(row.children(".drives-table--dateModified").first().children().first().val(), "YYYY-MM-DD").format("YYYY-MM-DD[T]HH:mm:ss[+02:00]")
+    dateDue: moment(row.children(".drives-table--dateDue").first().children().first().val(), "YYYY-MM-DD[T]HH:mm:ss[+02:00]")
   }
   return drive;
 }
@@ -161,9 +160,7 @@ function attemptEdit(editButton, index) {
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
     var drive = gatherInput(index);
-    drive['password'] = password;
-    console.debug(drive);
-    console.log(JSON.stringify(drive, null, 2));
+    drive['password'] = password;    
     $.ajax({
       url: url,
       type: 'PUT',
@@ -172,6 +169,7 @@ function attemptEdit(editButton, index) {
         console.log(result);
         showSnackbarMsg("Eintrag geändert.")
         toggleEditButton(editButton, index);
+        getDrives();
       },
       error: function(result) {
         console.debug("Error: " + JSON.stringify(result, null, 4));
