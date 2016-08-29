@@ -28,7 +28,6 @@ func (this *DriveController) errorMsg(writer http.ResponseWriter, message string
 }
 
 func setHeaders(writer http.ResponseWriter) {
-  // writer.Header().Set("Content-Type", "application/json")
   writer.Header().Set("Access-Control-Allow-Origin", "*")
   writer.Header().Set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE")
 }
@@ -40,13 +39,25 @@ type httpParameters struct {
     Id, Author, Contact, From, To, Password string
     Stops []string
     SeatsLeft int
-    DateCreated, DateModified time.Time
+    DateCreated, DateModified, DateDue time.Time
 }
 func (this *DriveController) parseHttpParameters(request *http.Request) (parameters httpParameters, err error) {
   // Decode JSON parameters from HTTP body.
   decoder := json.NewDecoder(request.Body)
 	err = decoder.Decode(&parameters)
 	return parameters, err
+}
+
+func (this *DriveController) CheckPassword(writer http.ResponseWriter, password string, id string) *model.Drive {
+  // Get currently saved drive from database.
+  drive, err := this.model.GetDrive(id)
+  if err != nil {
+    this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
+  }
+  if drive.Password != password {
+    this.errorMsg(writer, "Invalid password.", http.StatusBadRequest)
+  }
+  return drive
 }
 
 func (this *DriveController) Get(writer http.ResponseWriter, request *http.Request) {
@@ -82,6 +93,7 @@ func (this *DriveController) Get(writer http.ResponseWriter, request *http.Reque
     if err != nil {
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
     } else {
+        writer.Header().Set("Content-Type", "application/json")
         writer.Write(jsonResult)
     }
 }
@@ -126,20 +138,15 @@ func (this *DriveController) Post(writer http.ResponseWriter, request *http.Requ
         return
     }
 
-    // DateCreated provided?
+    // DateDue provided?
     zeroTime := time.Time{}
-    if parameters.DateCreated == zeroTime {
-        this.errorMsg(writer, "Invalid request: 'datecreated' missing.", http.StatusBadRequest)
-        return
-    }
-    // DateModified provided?
-    if parameters.DateModified == zeroTime {
-        this.errorMsg(writer, "Invalid request: 'datemodified' missing.", http.StatusBadRequest)
+    if parameters.DateDue == zeroTime {
+        this.errorMsg(writer, "Invalid request: 'dateDue' missing.", http.StatusBadRequest)
         return
     }
 
     drive := model.Drive{"", parameters.Author, parameters.Contact, parameters.From, parameters.Stops, parameters.To,
-                          parameters.SeatsLeft, parameters.Password, parameters.DateCreated, parameters.DateModified}
+                          parameters.SeatsLeft, parameters.Password, time.Now(), time.Now(), parameters.DateDue}
 
     // Send to model.
     err = this.model.AddDrive(&drive)
@@ -163,17 +170,44 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
         this.errorMsg(writer, "Invalid request: 'id' missing.", http.StatusBadRequest)
         return
     }
-    // Get currently saved drive from database.
-    drive, err := this.model.GetDrive(parameters.Id)
-    if err != nil {
-        this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
+    // Author provided?
+    if len(parameters.Author) == 0 {
+        this.errorMsg(writer, "Invalid request: 'author' missing.", http.StatusBadRequest)
+        return
+    }
+    // Contact provided?
+    if len(parameters.Contact) == 0 {
+        this.errorMsg(writer, "Invalid request: 'contact' missing.", http.StatusBadRequest)
+        return
+    }
+    // From provided?
+    if len(parameters.From) == 0 {
+        this.errorMsg(writer, "Invalid request: 'from' missing.", http.StatusBadRequest)
+        return
+    }
+    // To provided?
+    if len(parameters.To) == 0 {
+        this.errorMsg(writer, "Invalid request: 'to' missing.", http.StatusBadRequest)
+        return
+    }
+    // Stops provided?
+    if len(parameters.Stops) == 0 {
+        this.errorMsg(writer, "Invalid request: 'stops missing.", http.StatusBadRequest)
+        return
+    }
+    // Password provided?
+    if len(parameters.Password) == 0 {
+        this.errorMsg(writer, "Invalid request: 'password missing.", http.StatusBadRequest)
+        return
+    }
+    // DateDue provided?
+    zeroTime := time.Time{}
+    if parameters.DateDue == zeroTime {
+        this.errorMsg(writer, "Invalid request: 'dateDue' missing.", http.StatusBadRequest)
         return
     }
 
-    if drive.Password != parameters.Password {
-      this.errorMsg(writer, "Invalid password.", http.StatusBadRequest)
-      return
-    }
+    drive := this.CheckPassword(writer, parameters.Password, parameters.Id)
 
     // Update values.
     drive.Author = parameters.Author
@@ -182,8 +216,8 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
     drive.Stops = parameters.Stops
     drive.To = parameters.To
     drive.SeatsLeft = parameters.SeatsLeft
-    drive.DateCreated = parameters.DateCreated
-    drive.DateModified = parameters.DateModified
+    drive.DateModified = time.Now()
+    drive.DateDue = parameters.DateDue
 
     // Send to model.
     err = this.model.UpdateDrive(drive)
