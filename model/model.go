@@ -23,4 +23,5 @@ type Drive struct {
     Password string `json:"password"`
     DateCreated time.Time `json:"dateCreated"`
     DateModified time.Time `json:"dateModified"`
+    DateDue time.Time `json:"dateDue"`
 }

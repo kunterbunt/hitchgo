@@ -35,8 +35,8 @@ function fillTable() {
       <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to'] + "' disabled='disabled'></td>\
       <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
       <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
-      <td class='drives-table--dateCreated mdl-data-table__cell--non-numeric'><input size='8' type='text' name='dateCreated' value='" + moment(drives[i]['dateCreated']).format("d.MM.YYYY") + "' disabled='disabled'></td>\
-      <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='text' name='dateModified' value='" + moment(drives[i]['dateModified'], "YYYY-MM-DD").format("d.MM.YYYY") + "' disabled='disabled'></td>\
+      <td class='drives-table--dateCreated mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateCreated']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
+      <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateModified' value='" + moment(drives[i]['dateModified']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
       <td class='drives-table--id hide'><input size='0' type='text' name='seatsleft' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
       ");
     var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
@@ -150,8 +150,8 @@ function gatherInput(index) {
     to: row.children(".drives-table--to").first().children().first().val(),
     seatsleft: parseInt(row.children(".drives-table--seatsleft").first().children().first().val(), 10),
     contact: row.children(".drives-table--contact").first().children().first().val(),
-    dateCreated: moment(row.children(".drives-table--dateCreated").first().children().first().val(), "YYYY-MM-DD"),
-    dateModified: moment(row.children(".drives-table--dateModified").first().children().first().val(), "YYYY-MM-DD")
+    dateCreated: moment(row.children(".drives-table--dateCreated").first().children().first().val(), "YYYY-MM-DD[T]HH:mm:ss[+02:00]"),
+    dateModified: moment(row.children(".drives-table--dateModified").first().children().first().val(), "YYYY-MM-DD").format("YYYY-MM-DD[T]HH:mm:ss[+02:00]")
   }
   return drive;
 }
@@ -162,6 +162,7 @@ function attemptEdit(editButton, index) {
   if (password != null) {
     var drive = gatherInput(index);
     drive['password'] = password;
+    console.debug(drive);
     console.log(JSON.stringify(drive, null, 2));
     $.ajax({
       url: url,
