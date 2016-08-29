@@ -29,21 +29,22 @@ function fillTable() {
   for (let i = 0; i < drives.length; i++) {
     var entry = $("\
     <tr>\
-      <td class='mdl-data-table__cell--non-numeric'><input class='drives-table--author' size='12' type='text' name='author' value='" + drives[i]['author'] + "' disabled='disabled'></td>\
-      <td class='mdl-data-table__cell--non-numeric'><input class='drives-table--from' size='12' type='text' name='from' value='" + drives[i]['from'] + "' disabled='disabled'></td>\
-      <td class='mdl-data-table__cell--non-numeric'><input class='drives-table--stops' size='25' type='text' name='stops' value='" + drives[i]['stops'] + "' disabled='disabled'></td>\
-      <td class='mdl-data-table__cell--non-numeric'><input class='drives-table--to' size='12' type='text' name='to' value='" + drives[i]['to'] + "' disabled='disabled'></td>\
-      <td><input class='drives-table--seatsleft' size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
-      <td class='mdl-data-table__cell--non-numeric'><input class='drives-table--contact' size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
-      <td class='mdl-data-table__cell--non-numeric'><input class='drives-table--dateCreated' size='8' type='text' name='dateCreated' value='" + new Date(drives[i]['dateCreated']).toLocaleDateString() + "' disabled='disabled'></td>\
-      <td class='mdl-data-table__cell--non-numeric'><input class='drives-table--dateModified' size='8' type='text' name='dateModified' value='" + new Date(drives[i]['dateModified']).toLocaleDateString() + "' disabled='disabled'></td>\
+      <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' value='" + drives[i]['author'] + "' disabled='disabled'></td>\
+      <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' value='" + drives[i]['from'] + "' disabled='disabled'></td>\
+      <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' value='" + drives[i]['stops'] + "' disabled='disabled'></td>\
+      <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to'] + "' disabled='disabled'></td>\
+      <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
+      <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
+      <td class='drives-table--dateCreated mdl-data-table__cell--non-numeric'><input size='8' type='text' name='dateCreated' value='" + new Date(drives[i]['dateCreated']).toLocaleDateString() + "' disabled='disabled'></td>\
+      <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='text' name='dateModified' value='" + new Date(drives[i]['dateModified']).toLocaleDateString() + "' disabled='disabled'></td>\
+      <td class='drives-table--id hide'><input size='0' type='text' name='seatsleft' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
       ");
-    var editButton = $("<td><button class='mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
+    var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
     editButton.click(function() {
       toggleEditButton(this, i);
     });
     entry.append(editButton);
-    var deleteButton = $("<td><button class='red mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>delete</i></button></td>");
+    var deleteButton = $("<td><button class='deleteButton red mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>delete</i></button></td>");
     deleteButton.click(function() {
       deleteDrive(i);
     });
@@ -53,29 +54,73 @@ function fillTable() {
   }
 }
 
+function getEditButton(index) {
+  var row = getRow(index);
+  return $(row).children("td").children(".editButton, .doneButton").first().parent();
+}
+
+function getDeleteButton(index) {
+  var row = getRow(index);
+  return $(row).children("td").children(".deleteButton, .cancelButton").first().parent();
+}
+
+/** Edit/Done button click events. */
 function toggleEditButton(editButton, index) {
-  if ($(editButton).children().first().html() == '<i class="material-icons">check</i>') {
+  var isCheckIcon = $(editButton).children().first().html() == '<i class="material-icons">check</i>';
+  // Click on 'done' button.
+  if (isCheckIcon) {
+    // Disable input fields, change to edit button.
     setTextFields(index, true);
-    $(editButton).children().first().html("<i class='material-icons'>mode_edit</i>");
-    $(editButton).children().first().removeClass("green");
+    setButton(editButton, "<i class='material-icons'>mode_edit</i>", "editButton", "doneButton");
+    // Set its click action to calling this function.
+    $(editButton).unbind().click(function() {
+      toggleEditButton(editButton, index);
+    });
+  // Click on 'edit' button.
   } else {
-    // Enable input fields.
+    // Enable input fields for edit, change done button.
     setTextFields(index, false);
-    // Set check mark icon and color button green.
-    $(editButton).children().first().html("<i class='material-icons'>check</i>");
-    $(editButton).children().first().addClass("green");
-    // editDrive(i);
+    setButton(editButton, "<i class='material-icons'>check</i>", "doneButton", "editButton");
+    // Set its click action to asking for password and eventually sending the HTTP PUT request.
+    $(editButton).unbind().click(function() {
+      attemptEdit(editButton, index);
+    });
+    // Refunction delete button to serve as cancel button.
+    deleteButton = getDeleteButton(index);
+    setButton(deleteButton, "<i class='material-icons'>clear</i>", "cancelButton", "deleteButton");
+    $(deleteButton).unbind().click(function() {
+      onCancelButton(deleteButton, index);
+    });
   }
 }
 
+function onCancelButton(cancelButton, index) {  
+  setButton(cancelButton, "<i class='material-icons'>delete</i>", "deleteButton", "cancelButton");
+  $(cancelButton).unbind().click(function() {
+    onDeleteButton(cancelButton);
+  });
+  toggleEditButton(getEditButton(index), index);
+}
+
+function onDeleteButton(deleteButton) {
+
+}
+
+/** Change a button's HTML and set classes for default MDL button. */
+function setButton(button, html, classesToAdd, classesToRemove) {
+  if (html != "")
+    $(button).children().first().html(html);
+  if (classesToAdd != "")
+    $(button).children().first().addClass(classesToAdd);
+  if (classesToRemove != "")
+    $(button).children().first().removeClass(classesToRemove);
+}
+
+/** Enable or disable the input fields on the ith row. */
 function setTextFields(index, disabled) {
-  // var row = $("#drives-table--body").children().eq(index);
   var rows = $("#drives-table--body").children();
   var currentRow = rows.first();
-  console.log(rows.length);
   for (let i = 0; i < rows.length; i++) {
-    console.log(currentRow);
-    console.log(i);
     if (i == index) {
       var currentField = currentRow.children().first();
       for (let i = 0; i < 8; i++) {
@@ -89,33 +134,57 @@ function setTextFields(index, disabled) {
   }
 }
 
-function editDrive(index) {
+/** Returns ith row's <tr> element. */
+function getRow(index) {
+  return $("#drives-table--body").children().eq(index);
+}
+
+/** Gathers all drive info on ith row and returns it as an object. */
+function gatherInput(index) {
+  var row = getRow(index);
+  var drive = {
+    id: row.children(".drives-table--id").first().children().first().val(),
+    author: row.children(".drives-table--author").first().children().first().val(),
+    from: row.children(".drives-table--from").first().children().first().val(),
+    stops: row.children(".drives-table--stops").first().children().first().val(),
+    to: row.children(".drives-table--to").first().children().first().val(),
+    seatsleft: row.children(".drives-table--seatsleft").first().children().first().val(),
+    contact: row.children(".drives-table--contact").first().children().first().val(),
+    dateCreated: row.children(".drives-table--dateCreated").first().children().first().val(),
+    dateModified: row.children(".drives-table--dateModified").first().children().first().val(),
+  }
+  return drive;
+}
+
+/** Asks for user password and sends out an HTTP PUT request. */
+function attemptEdit(editButton, index) {
+  console.log("edit drive");
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
+    var drive = gatherInput(index);
     $.ajax({
       url: url,
       type: 'PUT',
       data: '{\
-      "id":"57a4e736d6194c39b5000001",\
-      "author": "Marie",\
-      "contact": "marie@slowfoodyouthh.de",\
-      "from": "München",\
-      "stops": [\
-        ""\
-      ],\
-      "to": "Würzburg",\
-      "seatsleft": 5,\
+      "id":' + drive['id'] + ',\
+      "author":' + drive['author'] + ',\
+      "contact":' + drive['contact'] + ',\
+      "from":' + drive['from'] + ',\
+      "stops":' + drive['stops'] + ',\
+      "to":' + drive['to'] + ',\
+      "seatsleft":' + drive['seatsleft'] + ',\
       "password":"' + password + '",\
-      "dateCreated": "2002-10-02T17:00:00+02:00",\
-      "dateModified": "2002-10-02T17:00:00+02:00"\
+      "dateCreated":' + drive['dateCreated'] + ',\
+      "dateModified":' + drive['dateModified'] + '\
       }',
       success: function(result) {
-        showSnackbarMsg("Eintrag geändert.")
         console.log(result);
+        showSnackbarMsg("Eintrag geändert.")
+        toggleEditButton(editButton, index);
       },
       error: function(result) {
-        showSnackbarMsg("Sie haben ein falsches Passwort eingegeben.")
         console.debug("Error: " + JSON.stringify(result, null, 4));
+        showSnackbarMsg("Ein Fehler ist aufgetreten. Haben Sie vielleicht ein falsches Passwort eingegeben?")
       }
     });
   }

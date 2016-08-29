@@ -24,10 +24,36 @@ $red: #D50000;
     #drives-table {
       width: 100%;
       #drives-table--body {
-        td {
-          input:disabled {
-            background: white;
-            border: none;
+        tr {
+          &.disabled {
+            background: darken(white, 5%);
+          }
+          td {
+            input {
+              background: white;
+              &:disabled {
+                border: none;
+                background: transparent;
+              }
+            }
+            .editButton, .cancelButton {
+              background: darken(white, 10%);
+              &:hover {
+                background: darken(white, 20%);
+              }
+            }
+            .doneButton {
+              background: $green;
+              &:hover {
+                background: darken($green, 10%);
+              }
+            }
+            .deleteButton {
+              background: $red;
+              &:hover {
+                background: darken($red, 10%);
+              }
+            }
           }
         }
       }
@@ -51,4 +77,8 @@ $red: #D50000;
 
 .disabled {
   pointer-events: none;
+}
+
+.hide {
+  display: none;
 }
