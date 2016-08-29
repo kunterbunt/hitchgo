@@ -100,6 +100,7 @@ function onCancelButton(cancelButton, index) {
     onDeleteButton(cancelButton);
   });
   toggleEditButton(getEditButton(index), index);
+  getDrives();
 }
 
 function onDeleteButton(deleteButton) {
@@ -160,7 +161,7 @@ function attemptEdit(editButton, index) {
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
     var drive = gatherInput(index);
-    drive['password'] = password;    
+    drive['password'] = password;
     $.ajax({
       url: url,
       type: 'PUT',
