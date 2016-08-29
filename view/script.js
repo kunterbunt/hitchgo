@@ -35,8 +35,8 @@ function fillTable() {
       <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to'] + "' disabled='disabled'></td>\
       <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
       <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
-      <td class='drives-table--dateCreated mdl-data-table__cell--non-numeric'><input size='8' type='text' name='dateCreated' value='" + new Date(drives[i]['dateCreated']).toLocaleDateString() + "' disabled='disabled'></td>\
-      <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='text' name='dateModified' value='" + new Date(drives[i]['dateModified']).toLocaleDateString() + "' disabled='disabled'></td>\
+      <td class='drives-table--dateCreated mdl-data-table__cell--non-numeric'><input size='8' type='text' name='dateCreated' value='" + moment(drives[i]['dateCreated']).format("d.MM.YYYY") + "' disabled='disabled'></td>\
+      <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='text' name='dateModified' value='" + moment(drives[i]['dateModified'], "YYYY-MM-DD").format("d.MM.YYYY") + "' disabled='disabled'></td>\
       <td class='drives-table--id hide'><input size='0' type='text' name='seatsleft' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
       ");
     var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
@@ -94,7 +94,7 @@ function toggleEditButton(editButton, index) {
   }
 }
 
-function onCancelButton(cancelButton, index) {  
+function onCancelButton(cancelButton, index) {
   setButton(cancelButton, "<i class='material-icons'>delete</i>", "deleteButton", "cancelButton");
   $(cancelButton).unbind().click(function() {
     onDeleteButton(cancelButton);
@@ -146,37 +146,27 @@ function gatherInput(index) {
     id: row.children(".drives-table--id").first().children().first().val(),
     author: row.children(".drives-table--author").first().children().first().val(),
     from: row.children(".drives-table--from").first().children().first().val(),
-    stops: row.children(".drives-table--stops").first().children().first().val(),
+    stops: [row.children(".drives-table--stops").first().children().first().val()],
     to: row.children(".drives-table--to").first().children().first().val(),
-    seatsleft: row.children(".drives-table--seatsleft").first().children().first().val(),
+    seatsleft: parseInt(row.children(".drives-table--seatsleft").first().children().first().val(), 10),
     contact: row.children(".drives-table--contact").first().children().first().val(),
-    dateCreated: row.children(".drives-table--dateCreated").first().children().first().val(),
-    dateModified: row.children(".drives-table--dateModified").first().children().first().val(),
+    dateCreated: moment(row.children(".drives-table--dateCreated").first().children().first().val(), "YYYY-MM-DD"),
+    dateModified: moment(row.children(".drives-table--dateModified").first().children().first().val(), "YYYY-MM-DD")
   }
   return drive;
 }
 
 /** Asks for user password and sends out an HTTP PUT request. */
 function attemptEdit(editButton, index) {
-  console.log("edit drive");
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
     var drive = gatherInput(index);
+    drive['password'] = password;
+    console.log(JSON.stringify(drive, null, 2));
     $.ajax({
       url: url,
       type: 'PUT',
-      data: '{\
-      "id":' + drive['id'] + ',\
-      "author":' + drive['author'] + ',\
-      "contact":' + drive['contact'] + ',\
-      "from":' + drive['from'] + ',\
-      "stops":' + drive['stops'] + ',\
-      "to":' + drive['to'] + ',\
-      "seatsleft":' + drive['seatsleft'] + ',\
-      "password":"' + password + '",\
-      "dateCreated":' + drive['dateCreated'] + ',\
-      "dateModified":' + drive['dateModified'] + '\
-      }',
+      data: JSON.stringify(drive, null, 2),
       success: function(result) {
         console.log(result);
         showSnackbarMsg("Eintrag geändert.")
