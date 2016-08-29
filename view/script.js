@@ -26,7 +26,9 @@ function getDrives() {
 function fillTable() {
   var table = $("#drives-table--body");
   table.empty();
+  // For each drive.
   for (let i = 0; i < drives.length; i++) {
+    // Create an HTML entry.
     var entry = $("\
     <tr>\
       <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' value='" + drives[i]['author'] + "' disabled='disabled'></td>\
@@ -37,35 +39,96 @@ function fillTable() {
       <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
       <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateDue']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
       <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateModified' value='" + moment(drives[i]['dateModified']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
-      <td class='drives-table--id hide'><input size='0' type='text' name='seatsleft' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
+      <td class='drives-table--id hide'><input size='0' type='text' name='id' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
       ");
+    // And an edit button.
     var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
     editButton.click(function() {
-      toggleEditButton(this, i);
+      onEditButton(this, i);
     });
     entry.append(editButton);
+    // And a delete button.
     var deleteButton = $("<td><button class='deleteButton red mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>delete</i></button></td>");
     deleteButton.click(function() {
-      deleteDrive(i);
+      onDeleteButton(this, i);
     });
     entry.append(deleteButton);
     entry.append("</tr>");
     table.append(entry);
   }
+
+  // Also add the last row that lets the user add new drives.
+  var newEntry = $("\
+    <tr>\
+      <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' placeholder='Name' disabled='disabled'></td>\
+      <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' placeholder='Abfahrtsort' disabled='disabled'></td>\
+      <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' placeholder='Zwischenstops' disabled='disabled'></td>\
+      <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' placeholder='Zielort' disabled='disabled'></td>\
+      <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' placeholder='' disabled='disabled'></td>\
+      <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' placeholder='Email/Tel' disabled='disabled'></td>\
+      <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' placeholder='Abfahrtstag' disabled='disabled'></td>\
+      <td></td>\
+      ");
+  var addButton = $("<td><button class='addButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>add</i></button></td>");
+  addButton.click(function() {
+    onAddButton(this);
+  });
+  newEntry.append(addButton);
+  var cancelButton = $("<td><button class='cancelButton disabled mdl-button mdl-js-button mdl-button--raised' type='button' disabled><i class='material-icons'>clear</i></button></td>");
+  cancelButton.click(function() {
+    onCancelButton(this, drives.length);
+  });
+  newEntry.append(cancelButton);
+  table.append(newEntry);
 }
 
-function getEditButton(index) {
-  var row = getRow(index);
-  return $(row).children("td").children(".editButton, .doneButton").first().parent();
+function onAddButton(button) {
+  setTextFields(drives.length, false);
+  getDeleteButton(drives.length).children("button").first().removeClass('disabled');
+  getDeleteButton(drives.length).children("button").first().prop('disabled', false);
+  setButton(button, "<i class='material-icons'>check</i>", "doneButton", "addButton");
+  $(button).unbind().click(function() {
+    attemptAdd();
+  });
 }
 
-function getDeleteButton(index) {
-  var row = getRow(index);
-  return $(row).children("td").children(".deleteButton, .cancelButton").first().parent();
+function onCancelButton(cancelButton, index) {
+  var isDisabled = $(cancelButton).children("button").first().prop('disabled');
+  if (isDisabled) {
+    return;
+  }
+  setButton(cancelButton, "<i class='material-icons'>delete</i>", "deleteButton", "cancelButton");
+  $(cancelButton).unbind().click(function() {
+    onDeleteButton(cancelButton);
+  });
+  onEditButton(getEditButton(index), index);
+  getDrives();
+}
+
+function onDeleteButton(deleteButton, index) {
+  var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
+  if (password != null) {
+    var drive = gatherInput(index);
+    var data = {id: drive['id'], password: password};    
+    $.ajax({
+      url: url,
+      type: 'DELETE',
+      data: JSON.stringify(data, null, 2),
+      success: function(result) {
+        console.log(result);
+        showSnackbarMsg("Eintrag gelöscht.")
+        getDrives();
+      },
+      error: function(result) {
+        console.debug("Error: " + JSON.stringify(result, null, 4));
+        showSnackbarMsg("Ein Fehler ist aufgetreten.")
+      }
+    });
+  }
 }
 
 /** Edit/Done button click events. */
-function toggleEditButton(editButton, index) {
+function onEditButton(editButton, index) {
   var isCheckIcon = $(editButton).children().first().html() == '<i class="material-icons">check</i>';
   // Click on 'done' button.
   if (isCheckIcon) {
@@ -74,7 +137,7 @@ function toggleEditButton(editButton, index) {
     setButton(editButton, "<i class='material-icons'>mode_edit</i>", "editButton", "doneButton");
     // Set its click action to calling this function.
     $(editButton).unbind().click(function() {
-      toggleEditButton(editButton, index);
+      onEditButton(editButton, index);
     });
   // Click on 'edit' button.
   } else {
@@ -92,29 +155,6 @@ function toggleEditButton(editButton, index) {
       onCancelButton(deleteButton, index);
     });
   }
-}
-
-function onCancelButton(cancelButton, index) {
-  setButton(cancelButton, "<i class='material-icons'>delete</i>", "deleteButton", "cancelButton");
-  $(cancelButton).unbind().click(function() {
-    onDeleteButton(cancelButton);
-  });
-  toggleEditButton(getEditButton(index), index);
-  getDrives();
-}
-
-function onDeleteButton(deleteButton) {
-
-}
-
-/** Change a button's HTML and set classes for default MDL button. */
-function setButton(button, html, classesToAdd, classesToRemove) {
-  if (html != "")
-    $(button).children().first().html(html);
-  if (classesToAdd != "")
-    $(button).children().first().addClass(classesToAdd);
-  if (classesToRemove != "")
-    $(button).children().first().removeClass(classesToRemove);
 }
 
 /** Enable or disable the input fields on the ith row. */
@@ -140,6 +180,56 @@ function getRow(index) {
   return $("#drives-table--body").children().eq(index);
 }
 
+function attemptAdd(button) {
+  if (!checkInput(drives.length))
+    return;
+  var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
+  if (password != null) {
+    var drive = gatherInput(drives.length);
+    drive['password'] = password;
+    $.ajax({
+      url: url,
+      type: 'POST',
+      data: JSON.stringify(drive, null, 2),
+      success: function(result) {
+        console.log(result);
+        showSnackbarMsg("Eintrag hinzugefügt.")
+        getDrives();
+      },
+      error: function(result) {
+        console.debug("Error: " + JSON.stringify(result, null, 4));
+        showSnackbarMsg("Ein Fehler ist aufgetreten.")
+      }
+    });
+  }
+}
+
+/** Asks for user password and sends out an HTTP PUT request. */
+function attemptEdit(editButton, index) {
+  if (!checkInput(index))
+    return;
+  var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
+  if (password != null) {
+    var drive = gatherInput(index);
+    drive['password'] = password;
+    $.ajax({
+      url: url,
+      type: 'PUT',
+      data: JSON.stringify(drive, null, 2),
+      success: function(result) {
+        console.log(result);
+        showSnackbarMsg("Eintrag geändert.")
+        onEditButton(editButton, index);
+        getDrives();
+      },
+      error: function(result) {
+        console.debug("Error: " + JSON.stringify(result, null, 4));
+        showSnackbarMsg("Ein Fehler ist aufgetreten. Haben Sie vielleicht ein falsches Passwort eingegeben?")
+      }
+    });
+  }
+}
+
 /** Gathers all drive info on ith row and returns it as an object. */
 function gatherInput(index) {
   var row = getRow(index);
@@ -156,32 +246,64 @@ function gatherInput(index) {
   return drive;
 }
 
-/** Asks for user password and sends out an HTTP PUT request. */
-function attemptEdit(editButton, index) {
-  var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
-  if (password != null) {
-    var drive = gatherInput(index);
-    drive['password'] = password;
-    $.ajax({
-      url: url,
-      type: 'PUT',
-      data: JSON.stringify(drive, null, 2),
-      success: function(result) {
-        console.log(result);
-        showSnackbarMsg("Eintrag geändert.")
-        toggleEditButton(editButton, index);
-        getDrives();
-      },
-      error: function(result) {
-        console.debug("Error: " + JSON.stringify(result, null, 4));
-        showSnackbarMsg("Ein Fehler ist aufgetreten. Haben Sie vielleicht ein falsches Passwort eingegeben?")
-      }
-    });
+/** Checks a row for sane input. */
+function checkInput(index) {
+  var drive = gatherInput(index);
+  var row = getRow(index);
+  var errorOccurred = false;
+  // Check all these that are expected to contain strings.
+  var compulsory = ['author', 'from', 'to', 'contact', 'dateDue'];
+  compulsory.forEach(function(field) {
+    if (drive[field] == "") {
+      row.children(".drives-table--" + field).first().children().first().addClass('missing');
+      errorOccurred = true;
+    } else {
+      row.children(".drives-table--" + field).first().children().first().removeClass('missing');
+    }
+  });
+
+  // Check if there's a number as seats left.
+  if (isNaN(drive['seatsleft'])) {
+    row.children(".drives-table--seatsleft").first().children().first().addClass('missing');
+    errorOccurred = true;
+  } else {
+    if (drive['seatsleft'] < 0) {
+      row.children(".drives-table--seatsleft").first().children().first().addClass('missing');
+      errorOccurred = true;
+    } else {
+      row.children(".drives-table--seatsleft").first().children().first().removeClass('missing');
+    }
   }
+
+  if (!Date.parse(row.children(".drives-table--dateDue").first().children().first().val())) {
+    row.children(".drives-table--dateDue").first().children().first().addClass('missing');
+    errorOccurred = true;
+  } else {
+    var pickedDate = Date.parse(row.children(".drives-table--dateDue").first().children().first().val());
+    var now = new Date();
+    if (pickedDate < now) {
+      row.children(".drives-table--dateDue").first().children().first().addClass('missing');
+      errorOccurred = true;
+    } else {
+      row.children(".drives-table--dateDue").first().children().first().removeClass('missing');
+    }
+  }
+
+  if (errorOccurred) {
+    showSnackbarMsg("Überprüfen Sie die rot markierten Felder!");
+    return false;
+  }
+  return true;
 }
 
-function deleteDrive(index) {
-  console.log(index);
+/** Change a button's HTML and set classes for default MDL button. */
+function setButton(button, html, classesToAdd, classesToRemove) {
+  if (html != "")
+    $(button).children().first().html(html);
+  if (classesToAdd != "")
+    $(button).children().first().addClass(classesToAdd);
+  if (classesToRemove != "")
+    $(button).children().first().removeClass(classesToRemove);
 }
 
 function showSnackbarMsg(message) {
@@ -196,4 +318,13 @@ function showSnackbarMsg(message) {
     actionText: 'Okay'
   };
   snackbarContainer.MaterialSnackbar.showSnackbar(data);
+}
+function getEditButton(index) {
+  var row = getRow(index);
+  return $(row).children("td").children(".editButton, .doneButton").first().parent();
+}
+
+function getDeleteButton(index) {
+  var row = getRow(index);
+  return $(row).children("td").children(".deleteButton, .cancelButton").first().parent();
 }

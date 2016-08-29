@@ -35,6 +35,9 @@ $red: #D50000;
                 border: none;
                 background: transparent;
               }
+              &.missing {
+                border: 1px solid red;
+              }
             }
             .editButton, .cancelButton {
               background: darken(white, 10%);
@@ -42,7 +45,7 @@ $red: #D50000;
                 background: darken(white, 20%);
               }
             }
-            .doneButton {
+            .doneButton, .addButton {
               background: $green;
               &:hover {
                 background: darken($green, 10%);

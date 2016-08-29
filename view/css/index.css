@@ -46,13 +46,15 @@ footer .mdl-button i {
         .mdl-layout__content .page-content #drives-table #drives-table--body tr td input:disabled {
           border: none;
           background: transparent; }
+        .mdl-layout__content .page-content #drives-table #drives-table--body tr td input.missing {
+          border: 1px solid red; }
       .mdl-layout__content .page-content #drives-table #drives-table--body tr td .editButton, .mdl-layout__content .page-content #drives-table #drives-table--body tr td .cancelButton {
         background: #e6e6e6; }
         .mdl-layout__content .page-content #drives-table #drives-table--body tr td .editButton:hover, .mdl-layout__content .page-content #drives-table #drives-table--body tr td .cancelButton:hover {
           background: #cccccc; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr td .doneButton {
+      .mdl-layout__content .page-content #drives-table #drives-table--body tr td .doneButton, .mdl-layout__content .page-content #drives-table #drives-table--body tr td .addButton {
         background: #00E676; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr td .doneButton:hover {
+        .mdl-layout__content .page-content #drives-table #drives-table--body tr td .doneButton:hover, .mdl-layout__content .page-content #drives-table #drives-table--body tr td .addButton:hover {
           background: #00b35c; }
       .mdl-layout__content .page-content #drives-table #drives-table--body tr td .deleteButton {
         background: #D50000; }
