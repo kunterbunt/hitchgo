@@ -1,5 +1,5 @@
 var url = 'http://api.localhost:8080/drives';
-var drives = null;
+var drives = [];
 var map = null;
 
 jQuery(function($) {
@@ -18,7 +18,11 @@ function initMap() {
 
 function getDrives() {
   $.getJSON(url, function(answer) {
-    drives = answer;
+    if (drives != null)
+      drives = answer;
+    else {
+      drives = [];
+    }
     fillTable();
   });
 }
@@ -27,34 +31,36 @@ function fillTable() {
   var table = $("#drives-table--body");
   table.empty();
   // For each drive.
-  for (let i = 0; i < drives.length; i++) {
-    // Create an HTML entry.
-    var entry = $("\
-    <tr>\
-      <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' value='" + drives[i]['author'] + "' disabled='disabled'></td>\
-      <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' value='" + drives[i]['from'] + "' disabled='disabled'></td>\
-      <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' value='" + drives[i]['stops'] + "' disabled='disabled'></td>\
-      <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to'] + "' disabled='disabled'></td>\
-      <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
-      <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
-      <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateDue']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
-      <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateModified' value='" + moment(drives[i]['dateModified']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
-      <td class='drives-table--id hide'><input size='0' type='text' name='id' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
-      ");
-    // And an edit button.
-    var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
-    editButton.click(function() {
-      onEditButton(this, i);
-    });
-    entry.append(editButton);
-    // And a delete button.
-    var deleteButton = $("<td><button class='deleteButton red mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>delete</i></button></td>");
-    deleteButton.click(function() {
-      onDeleteButton(this, i);
-    });
-    entry.append(deleteButton);
-    entry.append("</tr>");
-    table.append(entry);
+  if (drives != null) {
+    for (let i = 0; i < drives.length; i++) {
+      // Create an HTML entry.
+      var entry = $("\
+      <tr>\
+        <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' value='" + drives[i]['author'] + "' disabled='disabled'></td>\
+        <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' value='" + drives[i]['from'] + "' disabled='disabled'></td>\
+        <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' value='" + drives[i]['stops'] + "' disabled='disabled'></td>\
+        <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to'] + "' disabled='disabled'></td>\
+        <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
+        <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
+        <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateDue']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
+        <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateModified' value='" + moment(drives[i]['dateModified']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
+        <td class='drives-table--id hide'><input size='0' type='text' name='id' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
+        ");
+      // And an edit button.
+      var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
+      editButton.click(function() {
+        onEditButton(this, i);
+      });
+      entry.append(editButton);
+      // And a delete button.
+      var deleteButton = $("<td><button class='deleteButton red mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>delete</i></button></td>");
+      deleteButton.click(function() {
+        onDeleteButton(this, i);
+      });
+      entry.append(deleteButton);
+      entry.append("</tr>");
+      table.append(entry);
+    }
   }
 
   // Also add the last row that lets the user add new drives.
@@ -83,9 +89,10 @@ function fillTable() {
 }
 
 function onAddButton(button) {
-  setTextFields(drives.length, false);
-  getDeleteButton(drives.length).children("button").first().removeClass('disabled');
-  getDeleteButton(drives.length).children("button").first().prop('disabled', false);
+  let position = drives == null ? 0 : drives.length;
+  setTextFields(position, false);
+  getDeleteButton(position).children("button").first().removeClass('disabled');
+  getDeleteButton(position).children("button").first().prop('disabled', false);
   setButton(button, "<i class='material-icons'>check</i>", "doneButton", "addButton");
   $(button).unbind().click(function() {
     attemptAdd();
@@ -109,7 +116,7 @@ function onDeleteButton(deleteButton, index) {
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
     var drive = gatherInput(index);
-    var data = {id: drive['id'], password: password};    
+    var data = {id: drive['id'], password: password};
     $.ajax({
       url: url,
       type: 'DELETE',
@@ -181,11 +188,12 @@ function getRow(index) {
 }
 
 function attemptAdd(button) {
-  if (!checkInput(drives.length))
+  let position = drives == null ? 0 : drives.length;
+  if (!checkInput(position))
     return;
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
-    var drive = gatherInput(drives.length);
+    var drive = gatherInput(position);
     drive['password'] = password;
     $.ajax({
       url: url,
