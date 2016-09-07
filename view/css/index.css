@@ -29,6 +29,32 @@ footer .mdl-button i {
   overflow-x: auto; }
   .mdl-layout__content .page-content {
     height: 100%; }
+    .mdl-layout__content .page-content .controls-grid {
+      position: relative; }
+      .mdl-layout__content .page-content .controls-grid .controls {
+        padding: 6px;
+        width: 250px; }
+      .mdl-layout__content .page-content .controls-grid .arrow {
+        position: relative;
+        left: calc(250px / 2);
+        -moz-transform: translateX(-50%);
+        -o-transform: translateX(-50%);
+        -ms-transform: translateX(-50%);
+        -webkit-transform: translateX(-50%);
+        transform: translateX(-50%);
+        margin: 8px 0 8px 0;
+        color: gray; }
+        .mdl-layout__content .page-content .controls-grid .arrow:hover {
+          cursor: default; }
+      .mdl-layout__content .page-content .controls-grid button {
+        position: relative;
+        left: calc(250px / 2);
+        -moz-transform: translateX(-50%);
+        -o-transform: translateX(-50%);
+        -ms-transform: translateX(-50%);
+        -webkit-transform: translateX(-50%);
+        transform: translateX(-50%);
+        margin: 8px 0 8px 0; }
     .mdl-layout__content .page-content .map-grid {
       height: 50%; }
       .mdl-layout__content .page-content .map-grid #map--wrapper {

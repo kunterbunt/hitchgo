@@ -9,11 +9,114 @@ jQuery(function($) {
 function initMap() {
   map = new google.maps.Map(document.getElementById('map--canvas'), {
     center: {lat: 54.1657, lng: 10.4515},
-    zoom: 6
+    zoom: 6,
+    mapTypeId: 'roadmap'
   });
   google.maps.event.addListenerOnce(map, 'idle', function() {
    google.maps.event.trigger(map, 'resize');
-});
+  });
+
+  var origin_place_id = null;
+  var destination_place_id = null;
+  var waypoints = [];
+  var travel_mode = 'DRIVING';
+  var directionsService = new google.maps.DirectionsService;
+  var directionsDisplay = new google.maps.DirectionsRenderer;
+  directionsDisplay.setMap(map);
+
+  var origin_input = document.getElementById('origin-input');
+  var destination_input = document.getElementById('destination-input');
+  var via_input = document.getElementById('destination-via');
+  // var via_input = $('.destination-via').first();
+  console.debug(via_input);
+  // map.controls[google.maps.ControlPosition.TOP_LEFT].push(origin_input);
+
+  // map.controls[google.maps.ControlPosition.TOP_LEFT].push(destination_input);
+
+  function expandViewportToFitPlace(map, place) {
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+    } else {
+      map.setCenter(place.geometry.location);
+      map.setZoom(17);
+    }
+  }
+
+  var origin_autocomplete = new google.maps.places.Autocomplete(origin_input);
+  origin_autocomplete.bindTo('bounds', map);
+  var destination_autocomplete = new google.maps.places.Autocomplete(destination_input);
+  destination_autocomplete.bindTo('bounds', map);
+  var via_autocomplete = new google.maps.places.Autocomplete(via_input);
+  via_autocomplete.bindTo('bounds', map);
+
+  origin_autocomplete.addListener('place_changed', function() {
+    var place = origin_autocomplete.getPlace();
+    if (!place.geometry) {
+      showSnackbarMsg("Ort nicht gefunden: " + place.name);
+      return;
+    }
+    expandViewportToFitPlace(map, place);
+
+    // If the place has a geometry, store its place ID and route if we have
+    // the other place ID
+    origin_place_id = place.place_id;
+    route(origin_place_id, waypoints, destination_place_id, travel_mode,
+          directionsService, directionsDisplay);
+  });
+
+  destination_autocomplete.addListener('place_changed', function() {
+    var place = destination_autocomplete.getPlace();
+    if (!place.geometry) {
+      showSnackbarMsg("Ort nicht gefunden: " + place.name);
+      return;
+    }
+    expandViewportToFitPlace(map, place);
+
+    // If the place has a geometry, store its place ID and route if we have
+    // the other place ID
+    destination_place_id = place.place_id;
+    route(origin_place_id, waypoints, destination_place_id, travel_mode,
+          directionsService, directionsDisplay);
+  });
+
+  via_autocomplete.addListener('place_changed', function() {
+    var place = via_autocomplete.getPlace();
+    if (!place.geometry) {
+      showSnackbarMsg("Ort nicht gefunden: " + place.name);
+      return;
+    }
+    expandViewportToFitPlace(map, place);
+
+    console.debug(place);
+
+    waypoints.push({
+      location: place.formatted_address,
+      stopover: true
+    });
+    route(origin_place_id, waypoints, destination_place_id, travel_mode,
+          directionsService, directionsDisplay);
+  });
+
+  function route(origin_place_id, waypoints, destination_place_id, travel_mode,
+                 directionsService, directionsDisplay) {
+    if (!origin_place_id || !destination_place_id) {
+      return;
+    }
+    directionsService.route({
+      origin: {'placeId': origin_place_id},
+      destination: {'placeId': destination_place_id},
+      waypoints: waypoints,
+      optimizeWaypoints: true,
+      travelMode: travel_mode
+    }, function(response, status) {
+      if (status === 'OK') {
+        directionsDisplay.setDirections(response);
+      } else {
+        showSnackbarMsg('Fehler von Google: ' + status);
+      }
+    });
+  }
+
 }
 
 function getDrives() {
@@ -76,7 +179,7 @@ function fillTable() {
   newEntry.append(addButton);
   var cancelButton = $("<td><button class='cancelButton disabled mdl-button mdl-js-button mdl-button--raised' type='button' disabled><i class='material-icons'>clear</i></button></td>");
   cancelButton.click(function() {
-    onCancelButton(this, drives.length);
+    fillTable();
   });
   newEntry.append(cancelButton);
   table.append(newEntry);
@@ -102,14 +205,14 @@ function onCancelButton(cancelButton, index) {
     onDeleteButton(cancelButton);
   });
   onEditButton(getEditButton(index), index);
-  getDrives();
+  fillTable();
 }
 
 function onDeleteButton(deleteButton, index) {
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
     var drive = gatherInput(index);
-    var data = {id: drive['id'], password: password};    
+    var data = {id: drive['id'], password: password};
     $.ajax({
       url: url,
       type: 'DELETE',
@@ -183,7 +286,7 @@ function getRow(index) {
 function attemptAdd(button) {
   if (!checkInput(drives.length))
     return;
-  var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
+  var password = prompt("Bitte geben Sie ein Passwort ein. Nur damit kann der Eintrag geändert oder gelöscht werden.", "");
   if (password != null) {
     var drive = gatherInput(drives.length);
     drive['password'] = password;
@@ -280,8 +383,9 @@ function checkInput(index) {
     errorOccurred = true;
   } else {
     var pickedDate = Date.parse(row.children(".drives-table--dateDue").first().children().first().val());
-    var now = new Date();
-    if (pickedDate < now) {
+    var yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (pickedDate < yesterday) {
       row.children(".drives-table--dateDue").first().children().first().addClass('missing');
       errorOccurred = true;
     } else {
@@ -319,6 +423,7 @@ function showSnackbarMsg(message) {
   };
   snackbarContainer.MaterialSnackbar.showSnackbar(data);
 }
+
 function getEditButton(index) {
   var row = getRow(index);
   return $(row).children("td").children(".editButton, .doneButton").first().parent();

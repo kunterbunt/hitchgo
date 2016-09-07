@@ -31,6 +31,28 @@
     </header>
     <main class="mdl-layout__content">
       <div class="page-content">
+        <div class="controls-grid mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+            <input id="origin-input" class="controls" type="text"
+              placeholder="Von">
+            <br>
+            <i class="arrow material-icons">arrow_downward</i>
+            <br>
+            <input id="destination-via" class="destination-via controls" type="text"
+                placeholder="Über">
+            <br>
+            <i class="arrow material-icons">arrow_downward</i>
+            <br>
+            <input id="destination-input" class="controls" type="text"
+                placeholder="Nach">
+            <br>
+            <i class="arrow material-icons">arrow_downward</i>
+            <br>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+              <i class="material-icons">search</i>
+            </button>
+          </div>
+        </div>
         <div class="map-grid mdl-grid">
           <div id="map--wrapper" class="mdl-cell mdl-cell--12-col">
             <div id="map--canvas" class="mdl-shadow--4dp"></div>
@@ -48,7 +70,7 @@
                   <th>freie Plätze</th>
                   <th>Kontakt</th>
                   <th>Abfahrtstag</th>
-                  <th>zuletzt geändert</th>                  
+                  <th>zuletzt geändert</th>
                 </tr>
               </thead>
               <tbody id="drives-table--body">
@@ -67,6 +89,6 @@
 
   <script src="moment.js"></script>
   <script src="script.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDdQ_nbRIusKetPFIFHVQvncVKTweeN3iY&callback=initMap" async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAh-HSlsUoTcB_hJD5D-gsVOxoQg_APtVY&callback=initMap&libraries=places" async defer></script>
   </body>
 </html>
