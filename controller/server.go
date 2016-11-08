@@ -20,7 +20,7 @@ func NewServer(rootDirectory string) *Server {
 }
 
 func (server Server) StartListen() {
-    log.Fatal(http.ListenAndServe(":8080", server.router))
+    log.Fatal(http.ListenAndServe(":1337", server.router))
 }
 
 /**
