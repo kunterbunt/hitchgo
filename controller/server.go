@@ -28,12 +28,14 @@ func (server Server) StartListen() {
 */
 func (server Server) RegisterController(route string, subdomain string, controller Controller) {
     // Restrict to subdomain.
-    host := subdomain + ".{domain:[a-z0-9]+}"
-    server.router.Host(host).Methods("GET").PathPrefix(route).HandlerFunc(controller.Get)
-    server.router.Host(host).Methods("POST").Path(route).HandlerFunc(controller.Post)
-    server.router.Host(host).Methods("PUT").Path(route).HandlerFunc(controller.Put)
-    server.router.Host(host).Methods("DELETE").Path(route).HandlerFunc(controller.Delete)
-    server.router.Host(host).Methods("OPTIONS").Path(route).HandlerFunc(controller.Options)
+    // host := subdomain + ".{domain:[a-z.0-9]+}"
+    // host := "{subdomain:[a-z]+}.slowfoodyouthh.de"
+    // server.router.Host(host).Methods("GET").Path(route).HandlerFunc(controller.Get)
+    server.router.Methods("GET").Path(route).HandlerFunc(controller.Get)
+    server.router.Methods("POST").Path(route).HandlerFunc(controller.Post)
+    server.router.Methods("PUT").Path(route).HandlerFunc(controller.Put)
+    server.router.Methods("DELETE").Path(route).HandlerFunc(controller.Delete)
+    server.router.Methods("OPTIONS").Path(route).HandlerFunc(controller.Options)
 }
 
 /**

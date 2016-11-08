@@ -18,7 +18,7 @@ type Controller interface {
     Delete(http.ResponseWriter, *http.Request)
     /** PUT Processing. */
     Put(http.ResponseWriter, *http.Request)
-    /** Pre-flight Options Processing. */
+    /** Pre-flight OPTIONS Processing. */
     Options(http.ResponseWriter, *http.Request)
 }
 

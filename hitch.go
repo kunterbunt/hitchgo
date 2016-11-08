@@ -18,8 +18,7 @@ func main() {
     panic("No caller information")
   }
   // Instantiate REST API server.
-  restApiServer := controller.NewServer(path.Dir(hitchgoLocation))
-  // Register REST controller.
+  restApiServer := controller.NewServer(path.Dir(hitchgoLocation))  
   restApiServer.RegisterController("/drives", "api", controller.NewDriveController(mongoDb))
   // Instantiate HTML fileserver.
   // htmlServer := server.NewServer(path.Dir(hitchgoLocation), 3000)
