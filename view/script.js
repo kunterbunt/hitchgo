@@ -1,4 +1,4 @@
-var url = 'http://api.localhost:8080/drives';
+var url = 'http://www.slowfoodyouthh.de:8080/drives';
 var drives = [];
 var map = null;
 
