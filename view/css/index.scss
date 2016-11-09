@@ -3,7 +3,7 @@
 
 $green: #00E676;
 $red: #D50000;
-$searchBarWidth: 250px;
+$searchBarWidth: 90%;
 $gray: gray;
 
 .mdl-layout__content {
@@ -11,29 +11,6 @@ $gray: gray;
   overflow-x: auto;
   .page-content {
     height: 100%;
-    .controls-grid {
-      position: relative;
-      .controls {
-        padding: 6px;
-        width: $searchBarWidth;
-      }
-      .arrow {
-        position: relative;
-        left: calc(#{$searchBarWidth} / 2);
-        @include transform(translateX(-50%));
-        margin: 8px 0 8px 0;
-        color: $gray;
-        &:hover {
-          cursor: default;
-        }
-      }
-      button {
-        position: relative;
-        left: calc(#{$searchBarWidth} / 2); 
-        @include transform(translateX(-50%));
-        margin: 8px 0 8px 0;
-      }
-    }
     .map-grid {
       height: 50%;
       #map--wrapper {
@@ -42,6 +19,30 @@ $gray: gray;
           width: 100%;
           height: 100%;
           border: 1px solid darkgray;
+        }
+      }
+      .controls-container {
+        position: relative;
+        .controls {
+          padding: 6px;
+          margin: 6px 5%;
+          width: $searchBarWidth;
+        }
+        .arrow {
+          position: relative;
+          left: calc(#{$searchBarWidth} / 2);
+          @include transform(translateX(-50%));
+          margin: 8px 0 8px 0;
+          color: $gray;
+          &:hover {
+            cursor: default;
+          }
+        }
+        button {
+          position: relative;
+          left: calc(#{$searchBarWidth} / 2);
+          @include transform(translateX(-50%));
+          margin: 8px 0 8px 0;
         }
       }
     }
