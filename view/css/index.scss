@@ -28,6 +28,13 @@ $gray: gray;
           margin: 6px 5%;
           width: $searchBarWidth;
         }
+        .destination-via-container {
+          div {
+            .destination-via {
+              width: calc(#{$searchBarWidth} - 50px);
+            }
+          }
+        }
         .arrow {
           position: relative;
           left: calc(#{$searchBarWidth} / 2);
@@ -38,7 +45,7 @@ $gray: gray;
             cursor: default;
           }
         }
-        button {
+        button.search {
           position: relative;
           left: calc(#{$searchBarWidth} / 2);
           @include transform(translateX(-50%));

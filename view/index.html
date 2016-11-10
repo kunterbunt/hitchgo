@@ -36,22 +36,20 @@
             <div id="map--canvas" class="mdl-shadow--4dp"></div>
           </div>
           <div class="controls-container mdl-cell mdl-cell--2-col">
-            <input id="origin-input" class="controls" type="text"
-              placeholder="Von">
+            <input id="origin-input" class="controls" type="text" placeholder="Von"/>
             <br>
             <i class="arrow material-icons">arrow_downward</i>
             <br>
-            <input id="destination-via" class="destination-via controls" type="text"
-                placeholder="Über">
+            <div class="destination-via-container">
+              <input id="destination-via" class="destination-via controls" type="text" placeholder="Über"/>
+            </div>
+            <i class="arrow material-icons">arrow_downward</i>
+            <br>
+            <input id="destination-input" class="controls" type="text" placeholder="Nach"/>
             <br>
             <i class="arrow material-icons">arrow_downward</i>
             <br>
-            <input id="destination-input" class="controls" type="text"
-                placeholder="Nach">
-            <br>
-            <i class="arrow material-icons">arrow_downward</i>
-            <br>
-            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+            <button id="search-button" class="search mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
               <i class="material-icons">search</i>
             </button>
           </div>

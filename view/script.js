@@ -3,6 +3,8 @@ var url = 'http://localhost:8080/drives';
 var drives = [];
 var map = null;
 
+var origin_place_id = null;
+var destination_place_id = null;
 var waypoints = [];
 var travel_mode = 'DRIVING';
 var directionsService = null;
@@ -10,6 +12,9 @@ var directionsDisplay = null;
 
 jQuery(function($) {
   getDrives();
+  $("#search-button").click(function() {
+    triggerSearch();
+  });
 });
 
 function initMap() {
@@ -23,8 +28,6 @@ function initMap() {
    google.maps.event.trigger(map, 'resize');
   });
 
-  var origin_place_id = null;
-  var destination_place_id = null;
   directionsService = new google.maps.DirectionsService;
   directionsDisplay = new google.maps.DirectionsRenderer;
   directionsDisplay.setMap(map);
@@ -49,20 +52,16 @@ function initMap() {
   var via_autocomplete = new google.maps.places.Autocomplete(via_input);
   via_autocomplete.bindTo('bounds', map);
 
-
-
   // Add listeners to the fields so that the route is displayed if enough info was entered.
   origin_autocomplete.addListener('place_changed', function() {
     var place = origin_autocomplete.getPlace();
     if (!place.geometry) {
       showSnackbarMsg("Ort nicht gefunden: " + place.name);
-
       return;
     }
     expandViewportToFitPlace(map, place);
     origin_place_id = place.place_id;
-    route(origin_place_id, waypoints, destination_place_id, travel_mode,
-          directionsService, directionsDisplay);
+    triggerSearch();
   });
 
   destination_autocomplete.addListener('place_changed', function() {
@@ -73,63 +72,107 @@ function initMap() {
     }
     expandViewportToFitPlace(map, place);
     destination_place_id = place.place_id;
-    route(origin_place_id, waypoints, destination_place_id, travel_mode,
-          directionsService, directionsDisplay);
+    triggerSearch();
   });
 
-  via_autocomplete.addListener('place_changed', function() {
-    var place = via_autocomplete.getPlace();
-    if (!place.geometry) {
-      showSnackbarMsg("Ort nicht gefunden: " + place.name);
-      return;
-    }
-    expandViewportToFitPlace(map, place);
+  function addViaFieldListener(autocomplete) {
+    autocomplete.addListener('place_changed', function() {
+      var place = autocomplete.getPlace();
+      if (!place.geometry) {
+        showSnackbarMsg("Ort nicht gefunden: " + place.name);
+        return;
+      }
+      expandViewportToFitPlace(map, place);
+      waypoints.push({
+        location: place.formatted_address,
+        stopover: true
+      });
+      // Add another via field.
+      let container = $(".destination-via-container").first();
+      let downArrowIcon = $('<i class="arrow material-icons">arrow_downward</i>');
+      container.append(downArrowIcon);
+      let surroundingDiv = $('<div></div>');
+      let via_input_new = $('<input class="destination-via controls" type="text" placeholder="Über"/>');
+      let removeIcon = $('<button class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">highlight_off</i></button>');
+      surroundingDiv.append(via_input_new);
+      surroundingDiv.append(removeIcon);
+      container.append(surroundingDiv);
 
-    waypoints.push({
-      location: place.formatted_address,
-      stopover: true
+      removeIcon.click(function () {
+        if ($('.destination-via-container').first().find('input').length == 2) {
+          if (via_input_new.val() == '') {
+            return;
+          } else {
+            via_input_new.val('');
+            collectWaypoints();
+            triggerSearch();
+            return;
+          }
+        }
+        surroundingDiv.remove();
+        downArrowIcon.remove();
+        collectWaypoints();
+        triggerSearch();
+      });
+      // Enable autocomplete.
+      let new_via_autocomplete = new google.maps.places.Autocomplete(via_input_new[0]);
+      new_via_autocomplete.bindTo('bounds', map);
+      addViaFieldListener(new_via_autocomplete);
+      makeSearchFieldSelectFirstOption(via_input_new[0]);
+      triggerSearch();
     });
-    route(origin_place_id, waypoints, destination_place_id, travel_mode,
-          directionsService, directionsDisplay);
-  });
+  }
 
+  addViaFieldListener(via_autocomplete);
   // Force search fields to select first option when no option is selected.
   makeSearchFieldSelectFirstOption(origin_input);
   makeSearchFieldSelectFirstOption(via_input);
   makeSearchFieldSelectFirstOption(destination_input);
 } // END initMap
 
+function collectWaypoints() {
+  waypoints = [];
+  $('.destination-via-container').first().find('input').each(function(i, obj) {
+    let value = $(obj).val();
+    if (value !== '') {
+      waypoints.push({
+        location: value,
+        stopover: true
+      });
+    }
+  });
+}
+
+function triggerSearch() {
+  route(origin_place_id, waypoints, destination_place_id, travel_mode,
+        directionsService, directionsDisplay);
+}
+
 function makeSearchFieldSelectFirstOption(input) {
-  // store the original event binding function
+  // Store the original event binding function.
   var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
-
   function addEventListenerWrapper(type, listener) {
-  // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
-  // and then trigger the original listener.
-
-  if (type == "keydown") {
-    var orig_listener = listener;
-    listener = function (event) {
-      var suggestion_selected = $(".pac-item-selected").length > 0;
-      if (event.which == 13 && !suggestion_selected) {
-        var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40})
-        orig_listener.apply(input, [simulated_downarrow]);
-      }
-
-      orig_listener.apply(input, [event]);
-    };
+    // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
+    // and then trigger the original listener.
+    if (type == "keydown") {
+      var orig_listener = listener;
+      listener = function (event) {
+        var suggestion_selected = $(".pac-item-selected").length > 0;
+        if (event.which == 13 && !suggestion_selected) {
+          var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40})
+          orig_listener.apply(input, [simulated_downarrow]);
+        }
+        orig_listener.apply(input, [event]);
+      };
+    }
+    // Add the modified listener.
+    _addEventListener.apply(input, [type, listener]);
   }
-
-  // add the modified listener
-  _addEventListener.apply(input, [type, listener]);
+  if (input.addEventListener)
+    input.addEventListener = addEventListenerWrapper;
 }
 
-if (input.addEventListener)
-  input.addEventListener = addEventListenerWrapper;
-}
-
-function route(origin_place_id, waypoints, destination_place_id, travel_mode,
-               directionsService, directionsDisplay) {
+function route(origin_place_id, waypoints, destination_place_id, travel_mode, directionsService, directionsDisplay) {
   if (!origin_place_id || !destination_place_id) {
     return;
   }

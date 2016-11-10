@@ -43,6 +43,8 @@ footer .mdl-button i {
           padding: 6px;
           margin: 6px 5%;
           width: 90%; }
+        .mdl-layout__content .page-content .map-grid .controls-container .destination-via-container div .destination-via {
+          width: calc(90% - 50px); }
         .mdl-layout__content .page-content .map-grid .controls-container .arrow {
           position: relative;
           left: calc(90% / 2);
@@ -55,7 +57,7 @@ footer .mdl-button i {
           color: gray; }
           .mdl-layout__content .page-content .map-grid .controls-container .arrow:hover {
             cursor: default; }
-        .mdl-layout__content .page-content .map-grid .controls-container button {
+        .mdl-layout__content .page-content .map-grid .controls-container button.search {
           position: relative;
           left: calc(90% / 2);
           -moz-transform: translateX(-50%);
