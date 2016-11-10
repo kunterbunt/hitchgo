@@ -68,6 +68,10 @@ footer .mdl-button i {
       width: 100%; }
       .mdl-layout__content .page-content #drives-table #drives-table--body tr.disabled {
         background: #fafafa; }
+      .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive:hover {
+        cursor: pointer; }
+      .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive *:hover {
+        cursor: pointer; }
       .mdl-layout__content .page-content #drives-table #drives-table--body tr td input {
         background: white; }
         .mdl-layout__content .page-content #drives-table #drives-table--body tr td input:disabled {

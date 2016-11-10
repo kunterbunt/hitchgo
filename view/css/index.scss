@@ -53,6 +53,16 @@ $gray: gray;
           &.disabled {
             background: darken(white, 2%);
           }
+          &.drive {
+            &:hover {
+              cursor: pointer;
+            }
+            * {
+              &:hover {
+                cursor: pointer;
+              }
+            }
+          }
           td {
             input {
               background: white;
