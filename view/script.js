@@ -88,39 +88,49 @@ function initMap() {
         stopover: true
       });
       // Add another via field.
-      let container = $(".destination-via-container").first();
-      let downArrowIcon = $('<i class="arrow material-icons">arrow_downward</i>');
-      container.append(downArrowIcon);
-      let surroundingDiv = $('<div></div>');
-      let via_input_new = $('<input class="destination-via controls" type="text" placeholder="Über"/>');
-      let removeIcon = $('<button class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">highlight_off</i></button>');
-      surroundingDiv.append(via_input_new);
-      surroundingDiv.append(removeIcon);
-      container.append(surroundingDiv);
+      console.log(getNumberOfEmptyViaFields());
+      if (getNumberOfEmptyViaFields() === 0) {
+        let container = $(".destination-via-container").first();
+        let downArrowIcon = $('<i class="arrow material-icons">arrow_downward</i>');
+        container.append(downArrowIcon);
+        let surroundingDiv = $('<div></div>');
+        var via_input_new = $('<input class="destination-via controls" type="text" placeholder="Über"/>');
+        let removeIcon = $('<button class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">highlight_off</i></button>');
+        surroundingDiv.append(via_input_new);
+        surroundingDiv.append(removeIcon);
+        container.append(surroundingDiv);
 
-      removeIcon.click(function () {
-        if ($('.destination-via-container').first().find('input').length == 2) {
-          if (via_input_new.val() == '') {
-            return;
-          } else {
-            via_input_new.val('');
-            collectWaypoints();
-            triggerSearch();
-            return;
+        removeIcon.click(function () {
+          // Last one?
+          if ($('.destination-via-container').first().find('input').length == 2) {
+            // And empty?
+            if (via_input_new.val() == '') {
+              // Then don't remove it.
+              return;
+            // Not empty?
+            } else {
+              // Then empty it and re-search.
+              via_input_new.val('');
+              collectWaypoints();
+              triggerSearch();
+              return;
+            }
           }
-        }
-        surroundingDiv.remove();
-        downArrowIcon.remove();
-        collectWaypoints();
+          // If we get here then there's at least one more via field.
+          // So remove this one and re-search.
+          surroundingDiv.remove();
+          downArrowIcon.remove();
+          collectWaypoints();
+          triggerSearch();
+        });
+        // Enable autocomplete.
+        let new_via_autocomplete = new google.maps.places.Autocomplete(via_input_new[0]);
+        new_via_autocomplete.bindTo('bounds', map);
+        addViaFieldListener(new_via_autocomplete);
         triggerSearch();
-      });
-      // Enable autocomplete.
-      let new_via_autocomplete = new google.maps.places.Autocomplete(via_input_new[0]);
-      new_via_autocomplete.bindTo('bounds', map);
-      addViaFieldListener(new_via_autocomplete);
-      makeSearchFieldSelectFirstOption(via_input_new[0]);
-      triggerSearch();
+      }
     });
+    makeSearchFieldSelectFirstOption(getLastViaSearchField()[0]);
   }
 
   addViaFieldListener(via_autocomplete);
@@ -143,9 +153,23 @@ function collectWaypoints() {
   });
 }
 
+function getNumberOfEmptyViaFields() {
+  var number = 0;
+  $('.destination-via-container').first().find('input').each(function(i, obj) {
+    if ($(obj).val() === '') {      
+      number++
+    }
+  });
+  return number;
+}
+
 function triggerSearch() {
   route(origin_place_id, waypoints, destination_place_id, travel_mode,
         directionsService, directionsDisplay);
+}
+
+function getLastViaSearchField() {
+  return $('.destination-via-container').first().find('input').last();
 }
 
 function makeSearchFieldSelectFirstOption(input) {
