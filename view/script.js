@@ -44,7 +44,7 @@ function initMap() {
       map.setZoom(17);
     }
   }
-  // Set up autocomlete.
+  // Set up autocomplete.
   var origin_autocomplete = new google.maps.places.Autocomplete(origin_input);
   origin_autocomplete.bindTo('bounds', map);
   var destination_autocomplete = new google.maps.places.Autocomplete(destination_input);
@@ -88,7 +88,6 @@ function initMap() {
         stopover: true
       });
       // Add another via field.
-      console.log(getNumberOfEmptyViaFields());
       if (getNumberOfEmptyViaFields() === 0) {
         let container = $(".destination-via-container").first();
         let downArrowIcon = $('<i class="arrow material-icons">arrow_downward</i>');
@@ -130,14 +129,14 @@ function initMap() {
         triggerSearch();
       }
     });
-    makeSearchFieldSelectFirstOption(getLastViaSearchField()[0]);
+    selectFirstOnEnter(getLastViaSearchField()[0]);
   }
 
   addViaFieldListener(via_autocomplete);
   // Force search fields to select first option when no option is selected.
-  makeSearchFieldSelectFirstOption(origin_input);
-  makeSearchFieldSelectFirstOption(via_input);
-  makeSearchFieldSelectFirstOption(destination_input);
+  selectFirstOnEnter(origin_input);
+  // selectFirstOnEnter(via_input);
+  selectFirstOnEnter(destination_input);
 } // END initMap
 
 function collectWaypoints() {
@@ -151,12 +150,14 @@ function collectWaypoints() {
       });
     }
   });
+  origin_place_id = getFromSearchField().val();
+  destination_place_id = getToSearchField().val();
 }
 
 function getNumberOfEmptyViaFields() {
   var number = 0;
   $('.destination-via-container').first().find('input').each(function(i, obj) {
-    if ($(obj).val() === '') {      
+    if ($(obj).val() === '') {
       number++
     }
   });
@@ -164,12 +165,25 @@ function getNumberOfEmptyViaFields() {
 }
 
 function triggerSearch() {
+  // console.log(origin_place_id + " " + waypoints[0].location + " " + destination_place_id);
   route(origin_place_id, waypoints, destination_place_id, travel_mode,
         directionsService, directionsDisplay);
 }
 
-function getLastViaSearchField() {
-  return $('.destination-via-container').first().find('input').last();
+var selectFirstOnEnter = function(input){      // store the original event binding function
+    var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
+    function addEventListenerWrapper(type, listener) { // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected, and then trigger the original listener.
+    if (type == "keydown") {
+      var orig_listener = listener;
+      listener = function (event) {
+      var suggestion_selected = $(".pac-item-selected").length > 0;
+        if (event.which == 13 && !suggestion_selected) { var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40}); orig_listener.apply(input, [simulated_downarrow]); }
+        orig_listener.apply(input, [event]);
+      };
+    }
+    _addEventListener.apply(input, [type, listener]); // add the modified listener
+  }
+  if (input.addEventListener) { input.addEventListener = addEventListenerWrapper; } else if (input.attachEvent) { input.attachEvent = addEventListenerWrapper; }
 }
 
 function makeSearchFieldSelectFirstOption(input) {
@@ -211,12 +225,50 @@ function route(origin_place_id, waypoints, destination_place_id, travel_mode, di
       directionsDisplay.setDirections(response);
     } else {
       showSnackbarMsg('Fehler von Google: ' + status);
+      console.log(status);
+      console.debug(response);
     }
   });
 }
+function getFromSearchField() {
+  return $('#origin-input');
+}
 
-function populateMap(drive) {
+function getLastViaSearchField() {
+  return $('.destination-via-container').first().find('input').last();
+}
 
+function getToSearchField() {
+  return $('#destination-input');
+}
+
+function clearSearchFields() {
+  getFromSearchField().val('');
+  getToSearchField().val('');
+  $('.destination-via-container').first().find('div').each(function(i, obj) {
+    $(obj).prev().remove();
+    obj.remove();
+  });
+  getLastViaSearchField().val('');
+  origin_place_id = '';
+  destination_place_id = '';
+  waypoints = [];
+}
+
+function populate(drive) {
+  var enter = jQuery.Event("keydown");
+  enter.which = 13;
+  enter.keyCode = 13;
+  getFromSearchField().val(drive.from);
+  getFromSearchField().trigger(enter);
+  getToSearchField().val(drive.to);
+  getToSearchField().trigger(enter);
+  for (let i = 0; i < drive.stops.length; i++) {
+    getLastViaSearchField().val(drive.stops[i]);
+    getLastViaSearchField().trigger(enter);
+  }
+  collectWaypoints();
+  triggerSearch();
 }
 
 function getDrives() {
@@ -549,6 +601,7 @@ function getDeleteButton(index) {
 }
 
 function onDriveClick(row) {
-  drive = gatherInputFromRow($(row));
-  populateMap(drive);
+  clearSearchFields();
+  // drive = gatherInputFromRow($(row));
+  // populate(drive);
 }
