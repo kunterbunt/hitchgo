@@ -29,23 +29,23 @@ footer .mdl-button i {
   overflow-x: auto; }
   .mdl-layout__content .page-content {
     height: 100%; }
-    .mdl-layout__content .page-content .map-grid {
+    .mdl-layout__content .page-content #map {
       height: 50%; }
-      .mdl-layout__content .page-content .map-grid #map--wrapper {
+      .mdl-layout__content .page-content #map #map--wrapper {
         height: 100%; }
-        .mdl-layout__content .page-content .map-grid #map--wrapper #map--canvas {
+        .mdl-layout__content .page-content #map #map--wrapper #map--canvas {
           width: 100%;
           height: 100%;
           border: 1px solid darkgray; }
-      .mdl-layout__content .page-content .map-grid .controls-container {
+      .mdl-layout__content .page-content #map .controls-container {
         position: relative; }
-        .mdl-layout__content .page-content .map-grid .controls-container .controls {
+        .mdl-layout__content .page-content #map .controls-container .controls {
           padding: 6px;
           margin: 6px 5%;
           width: 90%; }
-        .mdl-layout__content .page-content .map-grid .controls-container .destination-via-container div .destination-via {
+        .mdl-layout__content .page-content #map .controls-container .destination-via-container div .destination-via {
           width: calc(90% - 50px); }
-        .mdl-layout__content .page-content .map-grid .controls-container .arrow {
+        .mdl-layout__content .page-content #map .controls-container .arrow {
           position: relative;
           left: calc(90% / 2);
           -moz-transform: translateX(-50%);
@@ -54,10 +54,10 @@ footer .mdl-button i {
           -webkit-transform: translateX(-50%);
           transform: translateX(-50%);
           margin: 8px 0 8px 0;
-          color: gray; }
-          .mdl-layout__content .page-content .map-grid .controls-container .arrow:hover {
+          color: #5b5b5b; }
+          .mdl-layout__content .page-content #map .controls-container .arrow:hover {
             cursor: default; }
-        .mdl-layout__content .page-content .map-grid .controls-container button.search {
+        .mdl-layout__content .page-content #map .controls-container button.search {
           position: relative;
           left: calc(90% / 2);
           -moz-transform: translateX(-50%);
@@ -66,41 +66,15 @@ footer .mdl-button i {
           -webkit-transform: translateX(-50%);
           transform: translateX(-50%);
           margin: 8px 0 8px 0; }
-    .mdl-layout__content .page-content #drives-table {
+    .mdl-layout__content .page-content #drives {
       width: 100%; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr.disabled {
-        background: #fafafa; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive {
-        -moz-transition: background-color 0.75s;
-        -o-transition: background-color 0.75s;
-        -webkit-transition: background-color 0.75s;
-        transition: background-color 0.75s; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive.selected {
-          background-color: #00E676;
-          color: black; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive:hover {
-          cursor: pointer; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive *:hover {
-          cursor: pointer; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr td input {
-        background: white; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr td input:disabled {
-          border: none;
-          background: transparent; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr td input.missing {
-          border: 1px solid red; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr td .editButton, .mdl-layout__content .page-content #drives-table #drives-table--body tr td .cancelButton {
-        background: #e6e6e6; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr td .editButton:hover, .mdl-layout__content .page-content #drives-table #drives-table--body tr td .cancelButton:hover {
-          background: #cccccc; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr td .doneButton, .mdl-layout__content .page-content #drives-table #drives-table--body tr td .addButton {
-        background: #00E676; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr td .doneButton:hover, .mdl-layout__content .page-content #drives-table #drives-table--body tr td .addButton:hover {
-          background: #00b35c; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr td .deleteButton {
-        background: #D50000; }
-        .mdl-layout__content .page-content #drives-table #drives-table--body tr td .deleteButton:hover {
-          background: #a20000; }
+    .mdl-layout__content .page-content .drive {
+      background-color: #F5F5F5; }
+      .mdl-layout__content .page-content .drive .mdl-card__title {
+        color: black;
+        border-bottom: 1px solid #5b5b5b; }
+      .mdl-layout__content .page-content .drive .drive__date--departure i, .mdl-layout__content .page-content .drive .drive__author i, .mdl-layout__content .page-content .drive .drive__mail i, .mdl-layout__content .page-content .drive .drive__phone i, .mdl-layout__content .page-content .drive .drive__date--departure-time i {
+        vertical-align: middle; }
 
 .green {
   background: #00E676; }

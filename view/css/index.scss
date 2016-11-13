@@ -4,14 +4,15 @@
 $green: #00E676;
 $red: #D50000;
 $searchBarWidth: 90%;
-$gray: gray;
+$gray: #5b5b5b;
+$lightgray: #E0E0E0;
 
 .mdl-layout__content {
   height: calc(100% - 64px);
   overflow-x: auto;
   .page-content {
     height: 100%;
-    .map-grid {
+    #map {
       height: 50%;
       #map--wrapper {
         height: 100%;
@@ -53,58 +54,18 @@ $gray: gray;
         }
       }
     }
-    #drives-table {
+    #drives {
       width: 100%;
-      #drives-table--body {
-        tr {
-          &.disabled {
-            background: darken(white, 2%);
-          }
-          &.drive {
-            @include transition(background-color 0.75s);
-            &.selected {
-              background-color: $green;
-              color: black;
-            }
-            &:hover {
-              cursor: pointer;
-            }
-            * {
-              &:hover {
-                cursor: pointer;
-              }
-            }
-          }
-          td {
-            input {
-              background: white;
-              &:disabled {
-                border: none;
-                background: transparent;
-              }
-              &.missing {
-                border: 1px solid red;
-              }
-            }
-            .editButton, .cancelButton {
-              background: darken(white, 10%);
-              &:hover {
-                background: darken(white, 20%);
-              }
-            }
-            .doneButton, .addButton {
-              background: $green;
-              &:hover {
-                background: darken($green, 10%);
-              }
-            }
-            .deleteButton {
-              background: $red;
-              &:hover {
-                background: darken($red, 10%);
-              }
-            }
-          }
+    }
+    .drive {
+      background-color: #F5F5F5;
+      .mdl-card__title {
+        color: black;
+        border-bottom: 1px solid $gray;
+      }
+      .drive__date--departure, .drive__author, .drive__mail, .drive__phone, .drive__date--departure-time {
+        i {
+          vertical-align: middle;
         }
       }
     }

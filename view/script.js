@@ -278,79 +278,134 @@ function getDrives() {
     } else {
       drives = [];
     }
-    fillTable();
+    display();
   });
 }
 
-function fillTable() {
-  var table = $("#drives-table--body");
-  table.empty();
+function display() {
+  var drivesContainer = $("#drives");
+  drivesContainer.empty();
   // For each drive.
   if (drives != null) {
     for (let i = 0; i < drives.length; i++) {
       // Gather stops into string.
-      let stops = "";
+      let stops = [];
       for (let j = 0; j < drives[i]['stops'].length; j++) {
         let name = drives[i]['stops'][j]['name'];
         if (name !== "")
-          stops += name + "&rarr;";
+          stops.push(name);
       }
+      let stopsHtml = "<div>";
+      for (let j = 0; j < stops.length; j++) {
+        stopsHtml += '&rarr; ' + stops[j] + '<br>';
+      }
+      stopsHtml += "</div>";
+      let from = drives[i]['from']['name'];
+      let to = drives[i]['to']['name'];
+      let title = from + ' &rarr; ' + to;
       // Create an HTML entry.
       var entry = $("\
-      <tr class='drive'>\
-        <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' value='" + drives[i]['contact']['name'] + "' disabled='disabled'></td>\
-        <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' value='" + drives[i]['from']['name'] + "' disabled='disabled'></td>\
-        <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' value='" + stops + "' disabled='disabled'></td>\
-        <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to']['name'] + "' disabled='disabled'></td>\
-        <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
-        <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact']['mail'] + "' disabled='disabled'></td>\
-        <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateDue']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
-        <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateModified' value='" + moment(drives[i]['dateModified']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
-        <td class='drives-table--id hide'><input size='0' type='text' name='id' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
-        ");
+      <div class='mdl-cell mdl-cell--4-col'>\
+        <div class='drive mdl-card mdl-shadow--6dp'>\
+          <div class='mdl-card__title mdl-card--expand'>\
+            <div class='mdl-card__title-text'><div>" + title + "</div></div>\
+          </div>\
+          <div class='mdl-card__supporting-text'>\
+            <div class='drive__route'><i class='material-icons'>directions</i>\
+              " + from + "\
+              " + stopsHtml + "\
+              &rarr; " + to + "\
+            </div>\
+            <br>\
+            <div class='drive__date--departure'><i class='material-icons'>date_range</i> " + moment(drives[i]['dateDue']).format('DD.MM.YYYY') + "</div>\
+            <br>\
+            <div class='drive__date--departure-time'><i class='material-icons'>access_time</i> 16:00</div>\
+            <br>\
+            <div class='drive__author'><i class='material-icons'>person</i> " + drives[i]['contact']['name'] + "</div>\
+            <br>\
+            <div class='drive__mail'><i class='material-icons'>email</i> <a href='" + drives[i]['contact']['mail'] + "'>" + drives[i]['contact']['mail'] + "</a></div>\
+            <br>\
+            <div class='drive__phone'><i class='material-icons'>phone</i> " + drives[i]['contact']['phone'] + "</div>\
+            <hr>\
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.\
+            Aenan convallis.\
+            <br>\
+          </div>\
+          <div class='mdl-card__actions mdl-card--border'>\
+            <a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+              Auf Karte zeigen\
+            </a>\
+            <br>\
+            <a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+              Bearbeiten\
+            </a>\
+            <a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+              Löschen\
+            </a>\
+          </div>\
+        </div>\
+      </div>\
+      ");
       entry.click(function() {
+        $(".mdl-layout__content").animate({scrollTop:0}, 350, "swing");
         onDriveClick(this);
       });
-      // And an edit button.
-      var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
-      editButton.click(function() {
-        onEditButton(this, i);
-      });
-      entry.append(editButton);
-      // And a delete button.
-      var deleteButton = $("<td><button class='deleteButton red mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>delete</i></button></td>");
-      deleteButton.click(function() {
-        onDeleteButton(this, i);
-      });
-      entry.append(deleteButton);
-      entry.append("</tr>");
-      table.append(entry);
+      drivesContainer.append(entry);
+      // var entry = $("\
+      // <tr class='drive'>\
+      //   <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' value='" + drives[i]['contact']['name'] + "' disabled='disabled'></td>\
+      //   <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' value='" + drives[i]['from']['name'] + "' disabled='disabled'></td>\
+      //   <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' value='" + stops + "' disabled='disabled'></td>\
+      //   <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to']['name'] + "' disabled='disabled'></td>\
+      //   <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
+      //   <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact']['mail'] + "' disabled='disabled'></td>\
+      //   <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateDue']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
+      //   <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateModified' value='" + moment(drives[i]['dateModified']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
+      //   <td class='drives-table--id hide'><input size='0' type='text' name='id' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
+      //   ");
+      // entry.click(function() {
+      //   onDriveClick(this);
+      // });
+      // // And an edit button.
+      // var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
+      // editButton.click(function() {
+      //   onEditButton(this, i);
+      // });
+      // entry.append(editButton);
+      // // And a delete button.
+      // var deleteButton = $("<td><button class='deleteButton red mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>delete</i></button></td>");
+      // deleteButton.click(function() {
+      //   onDeleteButton(this, i);
+      // });
+      // entry.append(deleteButton);
+      // entry.append("</tr>");
+      // table.append(entry);
     }
   }
 
   // Also add the last row that lets the user add new drives.
-  var newEntry = $("\
-    <tr>\
-      <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' placeholder='Name' disabled='disabled'></td>\
-      <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' placeholder='Abfahrtsort' disabled='disabled'></td>\
-      <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' placeholder='Zwischenstops' disabled='disabled'></td>\
-      <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' placeholder='Zielort' disabled='disabled'></td>\
-      <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' placeholder='' disabled='disabled'></td>\
-      <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' placeholder='Email/Tel' disabled='disabled'></td>\
-      <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' placeholder='Abfahrtstag' disabled='disabled'></td>\
-      <td></td>\
-      ");
-  var addButton = $("<td><button class='addButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>add</i></button></td>");
-  addButton.click(function() {
-    onAddButton(this);
-  });
-  newEntry.append(addButton);
-  var cancelButton = $("<td><button class='cancelButton disabled mdl-button mdl-js-button mdl-button--raised' type='button' disabled><i class='material-icons'>clear</i></button></td>");
-  cancelButton.click(function() {
-    fillTable();
-  });
-  newEntry.append(cancelButton);
-  table.append(newEntry);
+  // var newEntry = $("\
+  //   <tr>\
+  //     <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' placeholder='Name' disabled='disabled'></td>\
+  //     <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' placeholder='Abfahrtsort' disabled='disabled'></td>\
+  //     <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' placeholder='Zwischenstops' disabled='disabled'></td>\
+  //     <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' placeholder='Zielort' disabled='disabled'></td>\
+  //     <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' placeholder='' disabled='disabled'></td>\
+  //     <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' placeholder='Email/Tel' disabled='disabled'></td>\
+  //     <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' placeholder='Abfahrtstag' disabled='disabled'></td>\
+  //     <td></td>\
+  //     ");
+  // var addButton = $("<td><button class='addButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>add</i></button></td>");
+  // addButton.click(function() {
+  //   onAddButton(this);
+  // });
+  // newEntry.append(addButton);
+  // var cancelButton = $("<td><button class='cancelButton disabled mdl-button mdl-js-button mdl-button--raised' type='button' disabled><i class='material-icons'>clear</i></button></td>");
+  // cancelButton.click(function() {
+  //   fillTable();
+  // });
+  // newEntry.append(cancelButton);
+  // table.append(newEntry);
 }
 
 function onAddButton(button) {

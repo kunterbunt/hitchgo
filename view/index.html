@@ -31,7 +31,7 @@
     </header>
     <main class="mdl-layout__content">
       <div class="page-content">
-        <div class="map-grid mdl-grid">
+        <div id="map" class="mdl-grid">
           <div id="map--wrapper" class="mdl-cell mdl-cell--10-col">
             <div id="map--canvas" class="mdl-shadow--4dp"></div>
           </div>
@@ -53,24 +53,9 @@
               <i class="material-icons">search</i>
             </button>
           </div>
-          <div class="mdl-cell mdl-cell--12-col">
-            <table id="drives-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-              <thead>
-                <tr>
-                  <th class="mdl-data-table__cell--non-numeric">Fahrer(in)</th>
-                  <th>Abfahrtsort</th>
-                  <th>Zwischenstops</th>
-                  <th>Zielort</th>
-                  <th>freie Plätze</th>
-                  <th>Kontakt</th>
-                  <th>Abfahrtstag</th>
-                  <th>zuletzt geändert</th>
-                </tr>
-              </thead>
-              <tbody id="drives-table--body">
-              </tbody>
-            </table>
-          </div>
+        </div>
+        <div id="drives" class="mdl-grid">
+          <!-- Filled programmatically. -->
         </div>
       </div>
 
