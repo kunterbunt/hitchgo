@@ -3,7 +3,7 @@ package model
 import (
     "labix.org/v2/mgo"
     "labix.org/v2/mgo/bson"
-    "fmt"    
+    "fmt"
 )
 
 const (
@@ -25,9 +25,9 @@ func NewMongoDb(databaseName string) *MongoDb {
     driver.databaseName = databaseName
     session, err := mgo.Dial("127.0.0.1")
     if err != nil {
-		panic(err)
-        session.Close()
-	}
+  		panic(err)
+      session.Close()
+  	}
     driver.session = session
     driver.session.SetMode(mgo.Monotonic, true)
     fmt.Println("done.")

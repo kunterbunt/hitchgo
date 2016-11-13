@@ -256,6 +256,7 @@ function clearSearchFields() {
 }
 
 function populate(drive) {
+  clearSearchFields();
   var enter = jQuery.Event("keydown");
   enter.which = 13;
   enter.keyCode = 13;
@@ -273,9 +274,10 @@ function populate(drive) {
 
 function getDrives() {
   $.getJSON(url, function(answer) {
-    if (drives != null)
+    if (drives != null) {
       drives = answer;
-    else {
+      // console.debug(drives);
+    } else {
       drives = [];
     }
     fillTable();
@@ -288,13 +290,20 @@ function fillTable() {
   // For each drive.
   if (drives != null) {
     for (let i = 0; i < drives.length; i++) {
+      // Gather stops into string.
+      let stops = "";
+      for (let j = 0; j < drives[i]['stops'].length; j++) {
+        let name = drives[i]['stops'][j]['name'];
+        if (name !== "")
+          stops += name + "&rarr;";
+      }
       // Create an HTML entry.
       var entry = $("\
       <tr class='drive'>\
         <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' value='" + drives[i]['author'] + "' disabled='disabled'></td>\
-        <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' value='" + drives[i]['from'] + "' disabled='disabled'></td>\
-        <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' value='" + drives[i]['stops'] + "' disabled='disabled'></td>\
-        <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to'] + "' disabled='disabled'></td>\
+        <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' value='" + drives[i]['from']['name'] + "' disabled='disabled'></td>\
+        <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' value='" + stops + "' disabled='disabled'></td>\
+        <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to']['name'] + "' disabled='disabled'></td>\
         <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
         <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact'] + "' disabled='disabled'></td>\
         <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateDue']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
@@ -601,7 +610,6 @@ function getDeleteButton(index) {
 }
 
 function onDriveClick(row) {
-  clearSearchFields();
-  // drive = gatherInputFromRow($(row));
-  // populate(drive);
+  drive = gatherInputFromRow($(row));
+  populate(drive);
 }

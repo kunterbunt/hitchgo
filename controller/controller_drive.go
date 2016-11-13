@@ -36,8 +36,9 @@ func setHeaders(writer http.ResponseWriter) {
 * HTTP request parameters.
 */
 type httpParameters struct {
-    Id, Author, Contact, From, To, Password string
-    Stops []string
+    Id, Author, Contact, Password string
+    Stops []model.Place
+    From, To model.Place
     SeatsLeft int
     DateCreated, DateModified, DateDue time.Time
 }
@@ -72,7 +73,7 @@ func (this *DriveController) Get(writer http.ResponseWriter, request *http.Reque
     if (len(values) == 0) {
         var drives []*model.Drive
         drives, err = this.model.GetDrives()
-        for _, drive := range drives {          
+        for _, drive := range drives {
           drive.Password = ""
         }
         jsonResult, err = json.Marshal(drives)
@@ -95,6 +96,7 @@ func (this *DriveController) Get(writer http.ResponseWriter, request *http.Reque
     } else {
         writer.Header().Set("Content-Type", "application/json")
         writer.Write(jsonResult)
+        this.logger.Println("Results sent.")
     }
 }
 
@@ -118,23 +120,23 @@ func (this *DriveController) Post(writer http.ResponseWriter, request *http.Requ
         return
     }
     // From provided?
-    if len(parameters.From) == 0 {
+    if len(parameters.From.Name) == 0 {
         this.errorMsg(writer, "Invalid request: 'from' missing.", http.StatusBadRequest)
         return
     }
     // To provided?
-    if len(parameters.To) == 0 {
+    if len(parameters.To.Name) == 0 {
         this.errorMsg(writer, "Invalid request: 'to' missing.", http.StatusBadRequest)
         return
     }
     // Stops provided?
     if len(parameters.Stops) == 0 {
-        this.errorMsg(writer, "Invalid request: 'stops missing.", http.StatusBadRequest)
+        this.errorMsg(writer, "Invalid request: 'stops' missing.", http.StatusBadRequest)
         return
     }
     // Password provided?
     if len(parameters.Password) == 0 {
-        this.errorMsg(writer, "Invalid request: 'password missing.", http.StatusBadRequest)
+        this.errorMsg(writer, "Invalid request: 'password' missing.", http.StatusBadRequest)
         return
     }
 
@@ -154,6 +156,7 @@ func (this *DriveController) Post(writer http.ResponseWriter, request *http.Requ
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
     } else {
         writer.Write([]byte("Drive successfully saved."))
+        this.logger.Println("Drive successfully saved.")
     }
 }
 
@@ -181,12 +184,12 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
         return
     }
     // From provided?
-    if len(parameters.From) == 0 {
+    if len(parameters.From.Name) == 0 {
         this.errorMsg(writer, "Invalid request: 'from' missing.", http.StatusBadRequest)
         return
     }
     // To provided?
-    if len(parameters.To) == 0 {
+    if len(parameters.To.Name) == 0 {
         this.errorMsg(writer, "Invalid request: 'to' missing.", http.StatusBadRequest)
         return
     }
@@ -225,6 +228,7 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
     } else {
         writer.Write([]byte("Successfully updated."))
+        this.logger.Println("Successfully updated.")
     }
 }
 
@@ -257,6 +261,7 @@ func (this *DriveController) Delete(writer http.ResponseWriter, request *http.Re
         this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
     } else {
         writer.Write([]byte("Drive successfully removed."))
+        this.logger.Println("Drive successfully removed.")
     }
 }
 
