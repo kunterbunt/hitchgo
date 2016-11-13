@@ -73,6 +73,8 @@ footer .mdl-button i {
       .mdl-layout__content .page-content .drive .mdl-card__title {
         color: black;
         border-bottom: 1px solid #5b5b5b; }
+        .mdl-layout__content .page-content .drive .mdl-card__title div {
+          font-size: 1.5rem; }
       .mdl-layout__content .page-content .drive .drive__date--departure i, .mdl-layout__content .page-content .drive .drive__author i, .mdl-layout__content .page-content .drive .drive__mail i, .mdl-layout__content .page-content .drive .drive__phone i, .mdl-layout__content .page-content .drive .drive__date--departure-time i {
         vertical-align: middle; }
 

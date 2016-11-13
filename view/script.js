@@ -303,6 +303,7 @@ function display() {
       let from = drives[i]['from']['name'];
       let to = drives[i]['to']['name'];
       let title = from + ' &rarr; ' + to;
+
       // Create an HTML entry.
       var entry = $("\
       <div class='mdl-cell mdl-cell--4-col'>\
@@ -321,7 +322,8 @@ function display() {
             <br>\
             <div class='drive__date--departure-time'><i class='material-icons'>access_time</i> 16:00</div>\
             <br>\
-            <div class='drive__author'><i class='material-icons'>person</i> " + drives[i]['contact']['name'] + "</div>\
+            <div class='drive__author'><i class='material-icons'>person</i><input size='12' type='text' name='from' value='" + drives[i]['contact']['name'] + "' disabled='disabled'></div>\
+            \
             <br>\
             <div class='drive__mail'><i class='material-icons'>email</i> <a href='" + drives[i]['contact']['mail'] + "'>" + drives[i]['contact']['mail'] + "</a></div>\
             <br>\
@@ -332,24 +334,30 @@ function display() {
             <br>\
           </div>\
           <div class='mdl-card__actions mdl-card--border'>\
-            <a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
-              Auf Karte zeigen\
-            </a>\
-            <br>\
-            <a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
-              Bearbeiten\
-            </a>\
-            <a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
-              Löschen\
-            </a>\
           </div>\
         </div>\
       </div>\
       ");
-      entry.click(function() {
+      let buttonMap = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+        Auf Karte zeigen\
+      </a>");
+      buttonMap.click(function() {
         $(".mdl-layout__content").animate({scrollTop:0}, 350, "swing");
-        onDriveClick(this);
+        onDriveClick(drives[i]);
       });
+      let actions = entry.find(".mdl-card__actions").first();
+      actions.append(buttonMap);
+
+      let buttonEdit = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+        Bearbeiten\
+        </a>");
+      actions.append(buttonEdit);
+
+      let buttonDelete = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+        Löschen\
+      </a>");
+      actions.append(buttonDelete);
+
       drivesContainer.append(entry);
       // var entry = $("\
       // <tr class='drive'>\
@@ -652,9 +660,6 @@ function getDeleteButton(index) {
   return $(row).children("td").children(".deleteButton, .cancelButton").first().parent();
 }
 
-function onDriveClick(row) {
-  drive = gatherInputFromRow($(row));
-  $("#drives-table--body .drive").removeClass("selected");
-  $(row).addClass("selected");
+function onDriveClick(drive) {  
   populate(drive);
 }
