@@ -256,19 +256,17 @@ function clearSearchFields() {
 }
 
 function populate(drive) {
-  clearSearchFields();
-  var enter = jQuery.Event("keydown");
-  enter.which = 13;
-  enter.keyCode = 13;
-  getFromSearchField().val(drive.from);
-  getFromSearchField().trigger(enter);
-  getToSearchField().val(drive.to);
-  getToSearchField().trigger(enter);
-  for (let i = 0; i < drive.stops.length; i++) {
-    getLastViaSearchField().val(drive.stops[i]);
-    getLastViaSearchField().trigger(enter);
-  }
-  collectWaypoints();
+  origin_place_id = drive['from']['placeId'];
+  destination_place_id = drive['to']['placeId'];
+  waypoints = [];
+  for (let i = 0; i < drive['stops'].length; i++) {
+    if (drive['stops'][i]['name'] !== "") {
+      waypoints.push({
+        location: {placeId: drive['stops'][i]['placeId']},
+        stopover: true
+      });
+    }
+  }  
   triggerSearch();
 }
 
@@ -506,17 +504,7 @@ function attemptEdit(editButton, index) {
 }
 
 function gatherInputFromRow(row) {
-  var drive = {
-    id: row.children(".drives-table--id").first().children().first().val(),
-    author: row.children(".drives-table--author").first().children().first().val(),
-    from: row.children(".drives-table--from").first().children().first().val(),
-    stops: [row.children(".drives-table--stops").first().children().first().val()],
-    to: row.children(".drives-table--to").first().children().first().val(),
-    seatsleft: parseInt(row.children(".drives-table--seatsleft").first().children().first().val(), 10),
-    contact: row.children(".drives-table--contact").first().children().first().val(),
-    dateDue: moment(row.children(".drives-table--dateDue").first().children().first().val(), "YYYY-MM-DD[T]HH:mm:ss[+02:00]")
-  }
-  return drive;
+  return drives[$(row).index()];
 }
 
 /** Gathers all drive info on ith row and returns it as an object. */
@@ -611,5 +599,7 @@ function getDeleteButton(index) {
 
 function onDriveClick(row) {
   drive = gatherInputFromRow($(row));
+  $("#drives-table--body .drive").removeClass("selected");
+  $(row).addClass("selected");
   populate(drive);
 }

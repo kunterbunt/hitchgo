@@ -61,6 +61,10 @@ $gray: gray;
             background: darken(white, 2%);
           }
           &.drive {
+            &.selected {
+              background-color: $green;
+              color: black;
+            }
             &:hover {
               cursor: pointer;
             }
