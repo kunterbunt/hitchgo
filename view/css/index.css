@@ -70,13 +70,18 @@ footer .mdl-button i {
       width: 100%; }
       .mdl-layout__content .page-content #drives-table #drives-table--body tr.disabled {
         background: #fafafa; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive.selected {
-        background-color: #00E676;
-        color: black; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive:hover {
-        cursor: pointer; }
-      .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive *:hover {
-        cursor: pointer; }
+      .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive {
+        -moz-transition: background-color 0.75s;
+        -o-transition: background-color 0.75s;
+        -webkit-transition: background-color 0.75s;
+        transition: background-color 0.75s; }
+        .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive.selected {
+          background-color: #00E676;
+          color: black; }
+        .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive:hover {
+          cursor: pointer; }
+        .mdl-layout__content .page-content #drives-table #drives-table--body tr.drive *:hover {
+          cursor: pointer; }
       .mdl-layout__content .page-content #drives-table #drives-table--body tr td input {
         background: white; }
         .mdl-layout__content .page-content #drives-table #drives-table--body tr td input:disabled {

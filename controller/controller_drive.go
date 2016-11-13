@@ -36,10 +36,11 @@ func setHeaders(writer http.ResponseWriter) {
 * HTTP request parameters.
 */
 type httpParameters struct {
-    Id, Author, Contact, Password string
+    Id, Password string
     Stops []model.Place
     From, To model.Place
     SeatsLeft int
+    Contact model.Contact
     DateCreated, DateModified, DateDue time.Time
 }
 func (this *DriveController) parseHttpParameters(request *http.Request) (parameters httpParameters, err error) {
@@ -60,6 +61,10 @@ func (this *DriveController) CheckPassword(writer http.ResponseWriter, password 
   }
   return drive
 }
+
+// func (this *DriveController) checkForMissingParameters(parameters httpParameters, required ...string) (err error) {
+//
+// }
 
 func (this *DriveController) Get(writer http.ResponseWriter, request *http.Request) {
     this.logger.Println("GET Request")
@@ -110,12 +115,12 @@ func (this *DriveController) Post(writer http.ResponseWriter, request *http.Requ
     }
     // Check if all needed parameters are present and sane.
     // Author provided?
-    if len(parameters.Author) == 0 {
-        this.errorMsg(writer, "Invalid request: 'author' missing.", http.StatusBadRequest)
-        return
-    }
+    // if len(parameters.Author) == 0 {
+    //     this.errorMsg(writer, "Invalid request: 'author' missing.", http.StatusBadRequest)
+    //     return
+    // }
     // Contact provided?
-    if len(parameters.Contact) == 0 {
+    if len(parameters.Contact.Name) == 0 {
         this.errorMsg(writer, "Invalid request: 'contact' missing.", http.StatusBadRequest)
         return
     }
@@ -147,7 +152,7 @@ func (this *DriveController) Post(writer http.ResponseWriter, request *http.Requ
         return
     }
 
-    drive := model.Drive{"", parameters.Author, parameters.Contact, parameters.From, parameters.Stops, parameters.To,
+    drive := model.Drive{"", parameters.Contact, parameters.From, parameters.Stops, parameters.To,
                           parameters.SeatsLeft, parameters.Password, time.Now(), time.Now(), parameters.DateDue}
 
     // Send to model.
@@ -174,12 +179,12 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
         return
     }
     // Author provided?
-    if len(parameters.Author) == 0 {
-        this.errorMsg(writer, "Invalid request: 'author' missing.", http.StatusBadRequest)
-        return
-    }
+    // if len(parameters.Author) == 0 {
+    //     this.errorMsg(writer, "Invalid request: 'author' missing.", http.StatusBadRequest)
+    //     return
+    // }
     // Contact provided?
-    if len(parameters.Contact) == 0 {
+    if len(parameters.Contact.Name) == 0 {
         this.errorMsg(writer, "Invalid request: 'contact' missing.", http.StatusBadRequest)
         return
     }
@@ -213,7 +218,7 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
     drive := this.CheckPassword(writer, parameters.Password, parameters.Id)
 
     // Update values.
-    drive.Author = parameters.Author
+    // drive.Author = parameters.Author
     drive.Contact = parameters.Contact
     drive.From = parameters.From
     drive.Stops = parameters.Stops

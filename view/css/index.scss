@@ -61,6 +61,7 @@ $gray: gray;
             background: darken(white, 2%);
           }
           &.drive {
+            @include transition(background-color 0.75s);
             &.selected {
               background-color: $green;
               color: black;

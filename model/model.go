@@ -14,8 +14,7 @@ type Model interface {
 
 type Drive struct {
   Id string `json:"id" bson:"_id"`
-  Author string `json:"author"`
-  Contact string `json:"contact"`
+  Contact Contact `json:"contact"`
   From Place `json:"from"`
   Stops []Place `json:"stops"`
   To Place `json:"to"`
@@ -29,4 +28,10 @@ type Drive struct {
 type Place struct {
   Name string `json:"name"`
   PlaceId string `json:"placeId" bson:"_id"`
+}
+
+type Contact struct {
+  Name string `json:"name"`
+  Mail string `json:"mail" bson:"_id"`
+  Phone string `json:"phone"`
 }
