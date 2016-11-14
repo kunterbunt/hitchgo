@@ -1,6 +1,6 @@
 // var url = 'http://www.slowfoodyouthh.de:8080/drives';
 var url = 'http://localhost:8080/drives';
-var drives = [];
+var loadedDrives = [];
 var map = null;
 
 var origin_place_id = null;
@@ -32,111 +32,111 @@ function initMap() {
   directionsDisplay = new google.maps.DirectionsRenderer;
   directionsDisplay.setMap(map);
   // The three input fields.
-  var origin_input = document.getElementById('origin-input');
-  var destination_input = document.getElementById('destination-input');
-  var via_input = document.getElementById('destination-via');
-
-  function expandViewportToFitPlace(map, place) {
-    if (place.geometry.viewport) {
-      map.fitBounds(place.geometry.viewport);
-    } else {
-      map.setCenter(place.geometry.location);
-      map.setZoom(17);
-    }
-  }
-  // Set up autocomplete.
-  var origin_autocomplete = new google.maps.places.Autocomplete(origin_input);
-  origin_autocomplete.bindTo('bounds', map);
-  var destination_autocomplete = new google.maps.places.Autocomplete(destination_input);
-  destination_autocomplete.bindTo('bounds', map);
-  var via_autocomplete = new google.maps.places.Autocomplete(via_input);
-  via_autocomplete.bindTo('bounds', map);
-
-  // Add listeners to the fields so that the route is displayed if enough info was entered.
-  origin_autocomplete.addListener('place_changed', function() {
-    var place = origin_autocomplete.getPlace();
-    if (!place.geometry) {
-      showSnackbarMsg("Ort nicht gefunden: " + place.name);
-      return;
-    }
-    expandViewportToFitPlace(map, place);
-    origin_place_id = place.place_id;
-    triggerSearch();
-  });
-
-  destination_autocomplete.addListener('place_changed', function() {
-    var place = destination_autocomplete.getPlace();
-    if (!place.geometry) {
-      showSnackbarMsg("Ort nicht gefunden: " + place.name);
-      return;
-    }
-    expandViewportToFitPlace(map, place);
-    destination_place_id = place.place_id;
-    triggerSearch();
-  });
-
-  function addViaFieldListener(autocomplete) {
-    autocomplete.addListener('place_changed', function() {
-      var place = autocomplete.getPlace();
-      if (!place.geometry) {
-        showSnackbarMsg("Ort nicht gefunden: " + place.name);
-        return;
-      }
-      expandViewportToFitPlace(map, place);
-      waypoints.push({
-        location: place.formatted_address,
-        stopover: true
-      });
-      // Add another via field.
-      if (getNumberOfEmptyViaFields() === 0) {
-        let container = $(".destination-via-container").first();
-        let downArrowIcon = $('<i class="arrow material-icons">arrow_downward</i>');
-        container.append(downArrowIcon);
-        let surroundingDiv = $('<div></div>');
-        var via_input_new = $('<input class="destination-via controls" type="text" placeholder="Über"/>');
-        let removeIcon = $('<button class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">highlight_off</i></button>');
-        surroundingDiv.append(via_input_new);
-        surroundingDiv.append(removeIcon);
-        container.append(surroundingDiv);
-
-        removeIcon.click(function () {
-          // Last one?
-          if ($('.destination-via-container').first().find('input').length == 2) {
-            // And empty?
-            if (via_input_new.val() == '') {
-              // Then don't remove it.
-              return;
-            // Not empty?
-            } else {
-              // Then empty it and re-search.
-              via_input_new.val('');
-              collectWaypoints();
-              triggerSearch();
-              return;
-            }
-          }
-          // If we get here then there's at least one more via field.
-          // So remove this one and re-search.
-          surroundingDiv.remove();
-          downArrowIcon.remove();
-          collectWaypoints();
-          triggerSearch();
-        });
-        // Enable autocomplete.
-        let new_via_autocomplete = new google.maps.places.Autocomplete(via_input_new[0]);
-        new_via_autocomplete.bindTo('bounds', map);
-        addViaFieldListener(new_via_autocomplete);
-        triggerSearch();
-      }
-    });
-    selectFirstOnEnter(getLastViaSearchField()[0]);
-  }
-
-  addViaFieldListener(via_autocomplete);
-  // Force search fields to select first option when no option is selected.
-  selectFirstOnEnter(origin_input);
-  // selectFirstOnEnter(via_input);
-  selectFirstOnEnter(destination_input);
+  // var origin_input = document.getElementById('origin-input');
+  // var destination_input = document.getElementById('destination-input');
+  // var via_input = document.getElementById('destination-via');
+  //
+  // function expandViewportToFitPlace(map, place) {
+  //   if (place.geometry.viewport) {
+  //     map.fitBounds(place.geometry.viewport);
+  //   } else {
+  //     map.setCenter(place.geometry.location);
+  //     map.setZoom(17);
+  //   }
+  // }
+  // // Set up autocomplete.
+  // var origin_autocomplete = new google.maps.places.Autocomplete(origin_input);
+  // origin_autocomplete.bindTo('bounds', map);
+  // var destination_autocomplete = new google.maps.places.Autocomplete(destination_input);
+  // destination_autocomplete.bindTo('bounds', map);
+  // var via_autocomplete = new google.maps.places.Autocomplete(via_input);
+  // via_autocomplete.bindTo('bounds', map);
+  //
+  // // Add listeners to the fields so that the route is displayed if enough info was entered.
+  // origin_autocomplete.addListener('place_changed', function() {
+  //   var place = origin_autocomplete.getPlace();
+  //   if (!place.geometry) {
+  //     showSnackbarMsg("Ort nicht gefunden: " + place.name);
+  //     return;
+  //   }
+  //   expandViewportToFitPlace(map, place);
+  //   origin_place_id = place.place_id;
+  //   triggerSearch();
+  // });
+  //
+  // destination_autocomplete.addListener('place_changed', function() {
+  //   var place = destination_autocomplete.getPlace();
+  //   if (!place.geometry) {
+  //     showSnackbarMsg("Ort nicht gefunden: " + place.name);
+  //     return;
+  //   }
+  //   expandViewportToFitPlace(map, place);
+  //   destination_place_id = place.place_id;
+  //   triggerSearch();
+  // });
+  //
+  // function addViaFieldListener(autocomplete) {
+  //   autocomplete.addListener('place_changed', function() {
+  //     var place = autocomplete.getPlace();
+  //     if (!place.geometry) {
+  //       showSnackbarMsg("Ort nicht gefunden: " + place.name);
+  //       return;
+  //     }
+  //     expandViewportToFitPlace(map, place);
+  //     waypoints.push({
+  //       location: place.formatted_address,
+  //       stopover: true
+  //     });
+  //     // Add another via field.
+  //     if (getNumberOfEmptyViaFields() === 0) {
+  //       let container = $(".destination-via-container").first();
+  //       let downArrowIcon = $('<i class="arrow material-icons">arrow_downward</i>');
+  //       container.append(downArrowIcon);
+  //       let surroundingDiv = $('<div></div>');
+  //       var via_input_new = $('<input class="destination-via controls" type="text" placeholder="Über"/>');
+  //       let removeIcon = $('<button class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">highlight_off</i></button>');
+  //       surroundingDiv.append(via_input_new);
+  //       surroundingDiv.append(removeIcon);
+  //       container.append(surroundingDiv);
+  //
+  //       removeIcon.click(function () {
+  //         // Last one?
+  //         if ($('.destination-via-container').first().find('input').length == 2) {
+  //           // And empty?
+  //           if (via_input_new.val() == '') {
+  //             // Then don't remove it.
+  //             return;
+  //           // Not empty?
+  //           } else {
+  //             // Then empty it and re-search.
+  //             via_input_new.val('');
+  //             collectWaypoints();
+  //             triggerSearch();
+  //             return;
+  //           }
+  //         }
+  //         // If we get here then there's at least one more via field.
+  //         // So remove this one and re-search.
+  //         surroundingDiv.remove();
+  //         downArrowIcon.remove();
+  //         collectWaypoints();
+  //         triggerSearch();
+  //       });
+  //       // Enable autocomplete.
+  //       let new_via_autocomplete = new google.maps.places.Autocomplete(via_input_new[0]);
+  //       new_via_autocomplete.bindTo('bounds', map);
+  //       addViaFieldListener(new_via_autocomplete);
+  //       triggerSearch();
+  //     }
+  //   });
+  //   selectFirstOnEnter(getLastViaSearchField()[0]);
+  // }
+  //
+  // addViaFieldListener(via_autocomplete);
+  // // Force search fields to select first option when no option is selected.
+  // selectFirstOnEnter(origin_input);
+  // // selectFirstOnEnter(via_input);
+  // selectFirstOnEnter(destination_input);
 } // END initMap
 
 function collectWaypoints() {
@@ -166,8 +166,7 @@ function getNumberOfEmptyViaFields() {
 
 function triggerSearch() {
   // console.log(origin_place_id + " " + waypoints[0].location + " " + destination_place_id);
-  route(origin_place_id, waypoints, destination_place_id, travel_mode,
-        directionsService, directionsDisplay);
+  route(origin_place_id, waypoints, destination_place_id, travel_mode, directionsService, directionsDisplay);
 }
 
 var selectFirstOnEnter = function(input){      // store the original event binding function
@@ -255,7 +254,7 @@ function clearSearchFields() {
   waypoints = [];
 }
 
-function populate(drive) {
+function showOnMap(drive) {
   origin_place_id = drive['from']['placeId'];
   destination_place_id = drive['to']['placeId'];
   waypoints = [];
@@ -272,72 +271,79 @@ function populate(drive) {
 
 function getDrives() {
   $.getJSON(url, function(answer) {
-    if (drives != null) {
-      drives = answer;
-      // console.debug(drives);
+    if (answer != null) {
+      loadedDrives = answer;
+      // console.debug(loadedDrives);
     } else {
-      drives = [];
+      loadedDrives = [];
     }
-    display();
+    display(loadedDrives);
   });
 }
 
-function display() {
+function generateCard(drive) {
+  // Gather stops into string.
+  let stopsHtml = "<div class='drive--route__stop'>";
+  for (let j = 0; j < drive['stops'].length; j++) {
+    let name = drive['stops'][j]['name'];
+    if (name !== "")
+      stopsHtml += "&rarr; <input size='28' type='text' name='stop" + j + "' value='" + name + "' disabled='disabled'><br>";
+  }
+  stopsHtml += "</div>";
+  let from = drive['from']['name'];
+  let to = drive['to']['name'];
+  let title = from + ' &rarr; ' + to;
+
+  // Create an HTML entry.
+  var card = $("\
+  <div class='mdl-cell mdl-cell--4-col'>\
+    <div id='" + drive['id'] + "' class='drive mdl-card mdl-shadow--6dp'>\
+      <div class='mdl-card__title mdl-card--expand'>\
+        <div class='mdl-card__title-text'><div>" + title + "</div></div>\
+      </div>\
+      <div class='mdl-card__supporting-text'>\
+        <div class='drive__route'><i class='material-icons'>directions</i>\
+          <input size='28' type='text' name='from' value='" + from + "' disabled='disabled'>\
+          " + stopsHtml + "\
+          <div class='drive__route--to'>&rarr; <input size='28' type='text' name='to' value='" + to + "' disabled='disabled'></div>\
+        </div>\
+        <br>\
+        <div class='drive__date--departure'><i class='material-icons'>date_range</i> <input size='8' type='date' name='dateCreated' value='" + moment(drive['dateDue']).format('YYYY-MM-DD') + "' disabled='disabled'></div>\
+        <br>\
+        <div class='drive__date--departure-time'><i class='material-icons'>access_time</i> <input size='8' type='time' name='dateCreated' disabled='disabled'></div>\
+        <br>\
+        <div class='drive__seatsleft'><i class='material-icons'>event_seat</i> <input size='2' type='text' name='seatsleft' value='" + drive['seatsleft'] + "' disabled='disabled'></div>\
+        <br>\
+        <div class='drive__author'><i class='material-icons'>person</i><input size='28' type='text' name='from' value='" + drive['contact']['name'] + "' disabled='disabled'></div>\
+        \
+        <br>\
+        <div class='drive__mail'><i class='material-icons'>email</i> <input size='28' type='text' name='from' value='" + drive['contact']['mail'] + "' disabled='disabled'></div>\
+        <br>\
+        <div class='drive__phone'><i class='material-icons'>phone</i> <input size='28' type='text' name='from' value='" + drive['contact']['phone'] + "' disabled='disabled'></div>\
+        <hr>\
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.\
+        Aenan convallis.\
+        <br>\
+      </div>\
+      <div class='mdl-card__actions mdl-card--border'>\
+      </div>\
+    </div>\
+  </div>\
+  ");
+
+  return card;
+}
+
+function display(drives) {
   var drivesContainer = $("#drives");
   drivesContainer.empty();
   // For each drive.
   if (drives != null) {
     for (let i = 0; i < drives.length; i++) {
-      // Gather stops into string.
-      let stops = [];
-      for (let j = 0; j < drives[i]['stops'].length; j++) {
-        let name = drives[i]['stops'][j]['name'];
-        if (name !== "")
-          stops.push(name);
-      }
-      let stopsHtml = "<div>";
-      for (let j = 0; j < stops.length; j++) {
-        stopsHtml += '&rarr; ' + stops[j] + '<br>';
-      }
-      stopsHtml += "</div>";
-      let from = drives[i]['from']['name'];
-      let to = drives[i]['to']['name'];
-      let title = from + ' &rarr; ' + to;
+      // Generate the card.
+      let card = generateCard(drives[i]);
 
-      // Create an HTML entry.
-      var entry = $("\
-      <div class='mdl-cell mdl-cell--4-col'>\
-        <div class='drive mdl-card mdl-shadow--6dp'>\
-          <div class='mdl-card__title mdl-card--expand'>\
-            <div class='mdl-card__title-text'><div>" + title + "</div></div>\
-          </div>\
-          <div class='mdl-card__supporting-text'>\
-            <div class='drive__route'><i class='material-icons'>directions</i>\
-              " + from + "\
-              " + stopsHtml + "\
-              &rarr; " + to + "\
-            </div>\
-            <br>\
-            <div class='drive__date--departure'><i class='material-icons'>date_range</i> " + moment(drives[i]['dateDue']).format('DD.MM.YYYY') + "</div>\
-            <br>\
-            <div class='drive__date--departure-time'><i class='material-icons'>access_time</i> 16:00</div>\
-            <br>\
-            <div class='drive__author'><i class='material-icons'>person</i><input size='12' type='text' name='from' value='" + drives[i]['contact']['name'] + "' disabled='disabled'></div>\
-            \
-            <br>\
-            <div class='drive__mail'><i class='material-icons'>email</i> <a href='" + drives[i]['contact']['mail'] + "'>" + drives[i]['contact']['mail'] + "</a></div>\
-            <br>\
-            <div class='drive__phone'><i class='material-icons'>phone</i> " + drives[i]['contact']['phone'] + "</div>\
-            <hr>\
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.\
-            Aenan convallis.\
-            <br>\
-          </div>\
-          <div class='mdl-card__actions mdl-card--border'>\
-          </div>\
-        </div>\
-      </div>\
-      ");
+      // Append show on map button.
       let buttonMap = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
         Auf Karte zeigen\
       </a>");
@@ -345,49 +351,22 @@ function display() {
         $(".mdl-layout__content").animate({scrollTop:0}, 350, "swing");
         onDriveClick(drives[i]);
       });
-      let actions = entry.find(".mdl-card__actions").first();
+      let actions = card.find(".mdl-card__actions").first();
       actions.append(buttonMap);
 
+      // Append edit button.
       let buttonEdit = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
         Bearbeiten\
         </a>");
       actions.append(buttonEdit);
 
+      // Append delete button.
       let buttonDelete = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
         Löschen\
       </a>");
       actions.append(buttonDelete);
 
-      drivesContainer.append(entry);
-      // var entry = $("\
-      // <tr class='drive'>\
-      //   <td class='drives-table--author mdl-data-table__cell--non-numeric'><input size='12' type='text' name='author' value='" + drives[i]['contact']['name'] + "' disabled='disabled'></td>\
-      //   <td class='drives-table--from mdl-data-table__cell--non-numeric'><input size='12' type='text' name='from' value='" + drives[i]['from']['name'] + "' disabled='disabled'></td>\
-      //   <td class='drives-table--stops mdl-data-table__cell--non-numeric'><input size='25' type='text' name='stops' value='" + stops + "' disabled='disabled'></td>\
-      //   <td class='drives-table--to mdl-data-table__cell--non-numeric'><input size='12' type='text' name='to' value='" + drives[i]['to']['name'] + "' disabled='disabled'></td>\
-      //   <td class='drives-table--seatsleft'><input size='2' type='text' name='seatsleft' value='" + drives[i]['seatsleft'] + "' disabled='disabled'></td>\
-      //   <td class='drives-table--contact mdl-data-table__cell--non-numeric'><input size='25' type='text' name='contact' value='" + drives[i]['contact']['mail'] + "' disabled='disabled'></td>\
-      //   <td class='drives-table--dateDue mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateCreated' value='" + moment(drives[i]['dateDue']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
-      //   <td class='drives-table--dateModified mdl-data-table__cell--non-numeric'><input size='8' type='date' name='dateModified' value='" + moment(drives[i]['dateModified']).format("YYYY-MM-DD") + "' disabled='disabled'></td>\
-      //   <td class='drives-table--id hide'><input size='0' type='text' name='id' value='" + drives[i]['id'] + "' disabled='disabled'></td>\
-      //   ");
-      // entry.click(function() {
-      //   onDriveClick(this);
-      // });
-      // // And an edit button.
-      // var editButton = $("<td><button class='editButton mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>mode_edit</i></button></td>");
-      // editButton.click(function() {
-      //   onEditButton(this, i);
-      // });
-      // entry.append(editButton);
-      // // And a delete button.
-      // var deleteButton = $("<td><button class='deleteButton red mdl-button mdl-js-button mdl-button--raised' type='button'><i class='material-icons'>delete</i></button></td>");
-      // deleteButton.click(function() {
-      //   onDeleteButton(this, i);
-      // });
-      // entry.append(deleteButton);
-      // entry.append("</tr>");
-      // table.append(entry);
+      drivesContainer.append(card);
     }
   }
 
@@ -417,7 +396,7 @@ function display() {
 }
 
 function onAddButton(button) {
-  let position = drives == null ? 0 : drives.length;
+  let position = loadedDrives == null ? 0 : loadedDrives.length;
   setTextFields(position, false);
   getDeleteButton(position).children("button").first().removeClass('disabled');
   getDeleteButton(position).children("button").first().prop('disabled', false);
@@ -516,7 +495,7 @@ function getRow(index) {
 }
 
 function attemptAdd(button) {
-  let position = drives == null ? 0 : drives.length;
+  let position = loadedDrives == null ? 0 : loadedDrives.length;
   if (!checkInput(position))
     return;
   var password = prompt("Bitte geben Sie ein Passwort ein. Nur damit kann der Eintrag geändert oder gelöscht werden.", "");
@@ -567,7 +546,7 @@ function attemptEdit(editButton, index) {
 }
 
 function gatherInputFromRow(row) {
-  return drives[$(row).index()];
+  return loadedDrives[$(row).index()];
 }
 
 /** Gathers all drive info on ith row and returns it as an object. */
@@ -660,6 +639,6 @@ function getDeleteButton(index) {
   return $(row).children("td").children(".deleteButton, .cancelButton").first().parent();
 }
 
-function onDriveClick(drive) {  
-  populate(drive);
+function onDriveClick(drive) {
+  showOnMap(drive);
 }
