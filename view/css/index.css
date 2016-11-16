@@ -68,17 +68,55 @@ footer .mdl-button i {
           margin: 8px 0 8px 0; }
     .mdl-layout__content .page-content #drives {
       width: 100%; }
-    .mdl-layout__content .page-content .drive {
-      background-color: #F5F5F5; }
-      .mdl-layout__content .page-content .drive .mdl-card__title {
-        color: black;
-        border-bottom: 1px solid #5b5b5b; }
-        .mdl-layout__content .page-content .drive .mdl-card__title div {
-          font-size: 1.5rem; }
-      .mdl-layout__content .page-content .drive i {
-        vertical-align: middle; }
-      .mdl-layout__content .page-content .drive .drive--route__stop, .mdl-layout__content .page-content .drive .drive__route--to {
-        margin-left: 12px; }
+      .mdl-layout__content .page-content #drives .drive {
+        background-color: #F5F5F5; }
+        .mdl-layout__content .page-content #drives .drive .mdl-card__title {
+          color: black;
+          border-bottom: 1px solid #5b5b5b; }
+          .mdl-layout__content .page-content #drives .drive .mdl-card__title div {
+            font-size: 1.5rem; }
+        .mdl-layout__content .page-content #drives .drive div.drive__route--to, .mdl-layout__content .page-content #drives .drive div.drive__route--via {
+          margin-left: 0; }
+        .mdl-layout__content .page-content #drives .drive div.drive__route--to {
+          position: relative;
+          top: -38px; }
+        .mdl-layout__content .page-content #drives .drive div.drive__route--via {
+          position: relative;
+          top: -24px;
+          padding: 6px 0; }
+        .mdl-layout__content .page-content #drives .drive .addButtonContainer {
+          padding-bottom: 8px; }
+          .mdl-layout__content .page-content #drives .drive .addButtonContainer .addStopButton {
+            vertical-align: middle; }
+        .mdl-layout__content .page-content #drives .drive i {
+          vertical-align: middle;
+          width: 24px;
+          height: 24px; }
+        .mdl-layout__content .page-content #drives .drive .mdl-textfield__input {
+          font-size: 85%;
+          width: 89%;
+          display: inline;
+          color: #424242; }
+        .mdl-layout__content .page-content #drives .drive .mdl-textfield__label {
+          margin-left: 28px; }
+        .mdl-layout__content .page-content #drives .drive .drive__description .mdl-textfield__input {
+          color: #424242;
+          width: 100%; }
+        .mdl-layout__content .page-content #drives .drive .drive--route__stop, .mdl-layout__content .page-content #drives .drive .drive__route--to {
+          margin-left: 12px; }
+
+.button__add-card {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  padding-top: 32px;
+  margin-bottom: 0;
+  z-index: 998;
+  -moz-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0); }
 
 .green {
   background: #00E676; }

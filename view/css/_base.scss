@@ -3,6 +3,7 @@ $tablet:  "only screen and (min-width: 530px) and (max-width: 1024px)";
 $desktop: "only screen and (min-width: 1025px)";
 $intro-background: #d5dbea;
 $accent-color: #FF6E40;
+$textcolor: #424242;
 
 * {
   box-sizing: border-box;
@@ -11,7 +12,7 @@ $accent-color: #FF6E40;
 }
 body, html, .mdl-layout, .mdl-layout__content, .page-content {
   // height: auto;
-  color: #424242;
+  color: $textcolor;
 }
 .mdl-grid {
   p {

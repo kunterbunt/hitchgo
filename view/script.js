@@ -15,6 +15,9 @@ jQuery(function($) {
   $("#search-button").click(function() {
     triggerSearch();
   });
+  $("#addCardButton").click(function() {
+    onAddButton();
+  });
 });
 
 function initMap() {
@@ -282,48 +285,98 @@ function getDrives() {
 }
 
 function generateCard(drive) {
+  let isEditing = drive.editing === true;
+  let disabledHtml = isEditing ? "" : " disabled='disabled'";
+  let editingClass = isEditing ? "editing" : "";
   // Gather stops into string.
-  let stopsHtml = "<div class='drive--route__stop'>";
+  let stopsHtml = "<div class='drive--route__stops'>";
   for (let j = 0; j < drive['stops'].length; j++) {
     let name = drive['stops'][j]['name'];
     if (name !== "")
-      stopsHtml += "&rarr; <input size='28' type='text' name='stop" + j + "' value='" + name + "' disabled='disabled'><br>";
+      stopsHtml += "<div class='drive__route--via mdl-textfield mdl-js-textfield'>\
+         <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value='" + name + "' " + disabledHtml + ">\
+      </div>";
   }
   stopsHtml += "</div>";
+  // Set titles.
   let from = drive['from']['name'];
   let to = drive['to']['name'];
-  let title = from + ' &rarr; ' + to;
+  let title = "Neue Fahrt";
+  if (from != "" && to != "") {
+    title = from + ' &rarr; ' + to;
+  }
+
+  // Make adding stops possible.
+  let addNewStopElement = isEditing ? "<div class='addButtonContainer'><button class='addStopButton mdl-button mdl-js-button mdl-button--icon'><i class='material-icons'>add_circle</i></button></div><br>" : "";
 
   // Create an HTML entry.
   var card = $("\
   <div class='mdl-cell mdl-cell--4-col'>\
-    <div id='" + drive['id'] + "' class='drive mdl-card mdl-shadow--6dp'>\
+    <div id='" + drive['id'] + "' class='drive " + editingClass + " mdl-card mdl-shadow--6dp'>\
       <div class='mdl-card__title mdl-card--expand'>\
         <div class='mdl-card__title-text'><div>" + title + "</div></div>\
       </div>\
       <div class='mdl-card__supporting-text'>\
-        <div class='drive__route'><i class='material-icons'>directions</i>\
-          <input size='28' type='text' name='from' value='" + from + "' disabled='disabled'>\
+        <form action='#'>\
+          <div class='drive__route--from mdl-textfield mdl-js-textfield'>\
+            <i class='material-icons'>directions</i>\
+            <input size='28' class='mdl-textfield__input' type='text' name='from' id='drive__route--from--input' value='" + from + "' " + disabledHtml + ">\
+            <label class='mdl-textfield__label' for='drive__route--from--input'>Von</label>\
+          </div>\
           " + stopsHtml + "\
-          <div class='drive__route--to'>&rarr; <input size='28' type='text' name='to' value='" + to + "' disabled='disabled'></div>\
-        </div>\
-        <br>\
-        <div class='drive__date--departure'><i class='material-icons'>date_range</i> <input size='8' type='date' name='dateCreated' value='" + moment(drive['dateDue']).format('YYYY-MM-DD') + "' disabled='disabled'></div>\
-        <br>\
-        <div class='drive__date--departure-time'><i class='material-icons'>access_time</i> <input size='8' type='time' name='dateCreated' disabled='disabled'></div>\
-        <br>\
-        <div class='drive__seatsleft'><i class='material-icons'>event_seat</i> <input size='2' type='text' name='seatsleft' value='" + drive['seatsleft'] + "' disabled='disabled'></div>\
-        <br>\
-        <div class='drive__author'><i class='material-icons'>person</i><input size='28' type='text' name='from' value='" + drive['contact']['name'] + "' disabled='disabled'></div>\
-        \
-        <br>\
-        <div class='drive__mail'><i class='material-icons'>email</i> <input size='28' type='text' name='from' value='" + drive['contact']['mail'] + "' disabled='disabled'></div>\
-        <br>\
-        <div class='drive__phone'><i class='material-icons'>phone</i> <input size='28' type='text' name='from' value='" + drive['contact']['phone'] + "' disabled='disabled'></div>\
-        <hr>\
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.\
-        Aenan convallis.\
-        <br>\
+          " + addNewStopElement + "\
+          <div class='drive__route--to mdl-textfield mdl-js-textfield'>\
+             <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='to' id='drive__route--to--input' value='" + to + "' " + disabledHtml + ">\
+            <label class='mdl-textfield__label' for='drive__route--to--input'>Nach</label>\
+          </div>\
+          <br>\
+          <div class='drive__date--departure mdl-textfield mdl-js-textfield'>\
+            <i class='material-icons'>date_range</i>\
+            <input size='28' class='mdl-textfield__input' type='date' name='dateDue' id='drive__date--departure--input' value='" + moment(drive['dateDue']).format('YYYY-MM-DD') + "' " + disabledHtml + ">\
+            <label class='mdl-textfield__label' for='drive__date--departure--input'>Abfahrtszeit</label>\
+            <span class='mdl-textfield__error'>Das sieht nicht aus wie eine positive Zahl!</span>\
+          </div>\
+          <br>\
+          <div class='drive__date--departure-time mdl-textfield mdl-js-textfield'>\
+            <i class='material-icons'>access_time</i>\
+            <input size='28' class='mdl-textfield__input' type='time' name='timeDue' id='drive__date--departure-time--input' value='" + moment(drive['dateDue']).format('HH:mm:ss') + "' " + disabledHtml + ">\
+            <label class='mdl-textfield__label' for='drive__date--departure-time--input'>Abfahrtszeit</label>\
+            <span class='mdl-textfield__error'>Das sieht nicht aus wie eine positive Zahl!</span>\
+          </div>\
+          <br>\
+          <div class='drive__seatsleft mdl-textfield mdl-js-textfield'>\
+            <i class='material-icons'>event_seat</i>\
+            <input size='28' class='mdl-textfield__input' type='text' name='seatsleft' id='drive__seatsleft--input' pattern='[0-9]*' value='" + drive['seatsleft'] + "' " + disabledHtml + ">\
+            <label class='mdl-textfield__label' for='drive__seatsleft--input'>#freie Plätze</label>\
+            <span class='mdl-textfield__error'>Das sieht nicht aus wie eine positive Zahl!</span>\
+          </div>\
+          <br>\
+          <div class='drive__author mdl-textfield mdl-js-textfield'>\
+            <i class='material-icons'>person</i>\
+            <input size='28' class='mdl-textfield__input' type='text' name='name' id='drive__author--input' value='" + drive['contact']['name'] + "' " + disabledHtml + ">\
+            <label class='mdl-textfield__label' for='drive__author--input'>Fahrer</label>\
+          </div>\
+          <br>\
+          <div class='drive__mail mdl-textfield mdl-js-textfield'>\
+            <i class='material-icons'>email</i>\
+            <input size='28' class='mdl-textfield__input' type='email' name='mail' id='drive__mail--input' value='" + drive['contact']['mail'] + "' " + disabledHtml + ">\
+            <label class='mdl-textfield__label' for='drive__mail--input'>Mail</label>\
+            <span class='mdl-textfield__error'>Das sieht nicht aus wie eine Emailadresse!</span>\
+          </div>\
+          <br>\
+          <div class='drive__phone mdl-textfield mdl-js-textfield'>\
+            <i class='material-icons'>phone</i>\
+            <input size='28' class='mdl-textfield__input' type='tel' name='phone' id='drive__phone--input' pattern='-?[0-9]*(\.[0-9]+)?' value='" + drive['contact']['phone'] + "' " + disabledHtml + ">\
+            <label class='mdl-textfield__label' for='drive__phone--input'>Telefon</label>\
+            <span class='mdl-textfield__error'>Das sieht nicht aus wie eine Telefonnummer!</span>\
+          </div>\
+          <hr>\
+          <div class='drive__description mdl-textfield mdl-js-textfield'>\
+            <textarea class='mdl-textfield__input' type='text' rows='4' " + disabledHtml + ">Lorem ipsum dolor sit amet, consectetur adipiscing elit.\
+              Aenan convallis.</textarea>\
+          </div>\
+          <br>\
+        </form>\
       </div>\
       <div class='mdl-card__actions mdl-card--border'>\
       </div>\
@@ -342,33 +395,46 @@ function display(drives) {
     for (let i = 0; i < drives.length; i++) {
       // Generate the card.
       let card = generateCard(drives[i]);
-
-      // Append show on map button.
-      let buttonMap = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
-        Auf Karte zeigen\
-      </a>");
-      buttonMap.click(function() {
-        $(".mdl-layout__content").animate({scrollTop:0}, 350, "swing");
-        onDriveClick(drives[i]);
-      });
+      // Add buttons.
       let actions = card.find(".mdl-card__actions").first();
-      actions.append(buttonMap);
-
-      // Append edit button.
-      let buttonEdit = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
-        Bearbeiten\
+      let buttons = [];
+      // Editing mode.
+      if (drives[i].editing == true) {
+        let buttonOk = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Hinzufügen</a>");
+        buttons.push(buttonOk);
+        let buttonCancel = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Abbrechen</a>");
+        buttons.push(buttonCancel);
+      // Viewing mode.
+      } else {
+        // Append show on map button.
+        let buttonMap = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+          Auf Karte zeigen\
         </a>");
-      actions.append(buttonEdit);
+        buttonMap.click(function() {
+          $(".mdl-layout__content").animate({scrollTop:0}, 350, "swing");
+          onDriveClick(drives[i]);
+        });
+        buttons.push(buttonMap);
 
-      // Append delete button.
-      let buttonDelete = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
-        Löschen\
-      </a>");
-      actions.append(buttonDelete);
+        // Append edit button.
+        let buttonEdit = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+          Bearbeiten\
+          </a>");
+        buttons.push(buttonEdit);
 
+        // Append delete button.
+        let buttonDelete = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
+          Löschen\
+        </a>");
+        buttons.push(buttonDelete);
+      }
+      buttons.forEach(function(button) {
+        actions.append(button);
+      });
       drivesContainer.append(card);
     }
   }
+  componentHandler.upgradeDom(); // Tell MDL to update DOM and apply nice styling to all newly added elements.
 
   // Also add the last row that lets the user add new drives.
   // var newEntry = $("\
@@ -395,15 +461,31 @@ function display(drives) {
   // table.append(newEntry);
 }
 
+function createEmptyDrive() {
+  return {
+    "id":"",
+    "contact":{"name":"","mail":"","phone":""},
+    "dateCreated":"",
+    "dateDue":"",
+    "dateModified":"",
+    "from":{"name":"", "placeId":""},
+    "to":{"name":"", "placeId":""},
+    "password":"",
+    "seatsleft":0,
+    stops:[]
+  };
+}
+
 function onAddButton(button) {
-  let position = loadedDrives == null ? 0 : loadedDrives.length;
-  setTextFields(position, false);
-  getDeleteButton(position).children("button").first().removeClass('disabled');
-  getDeleteButton(position).children("button").first().prop('disabled', false);
-  setButton(button, "<i class='material-icons'>check</i>", "doneButton", "addButton");
-  $(button).unbind().click(function() {
-    attemptAdd();
-  });
+  drives = [];
+  let newDrive = createEmptyDrive();
+  newDrive.editing = true;
+  newDrive.id = "newDrive";
+  newDrive.dateDue = moment().add(1, 'day').format('YYYY-MM-DD');
+  drives.push(newDrive);
+  for (let i = 0; i < loadedDrives.length; i++)
+    drives.push(loadedDrives[i]);
+  display(drives);
 }
 
 function onCancelButton(cancelButton, index) {
