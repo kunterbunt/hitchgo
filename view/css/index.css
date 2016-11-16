@@ -70,6 +70,10 @@ footer .mdl-button i {
       width: 100%; }
       .mdl-layout__content .page-content #drives .drive {
         background-color: #F5F5F5; }
+        .mdl-layout__content .page-content #drives .drive.editing {
+          -webkit-box-shadow: 0 0 10px #ff6e40;
+          -moz-box-shadow: 0 0 10px #ff6e40;
+          box-shadow: 0 0 10px #ff6e40; }
         .mdl-layout__content .page-content #drives .drive .mdl-card__title {
           color: black;
           border-bottom: 1px solid #5b5b5b; }

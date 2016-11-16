@@ -58,6 +58,9 @@ $lightgray: #E0E0E0;
       width: 100%;
       .drive {
         background-color: #F5F5F5;
+        &.editing {
+          @include box-shadow(0, 0, 10px, rgba(255,110,64,1));
+        }
         .mdl-card__title {
           color: black;
           border-bottom: 1px solid $gray;
@@ -80,7 +83,7 @@ $lightgray: #E0E0E0;
         .addButtonContainer {
           padding-bottom: 8px;
           .addStopButton {
-            vertical-align: middle;            
+            vertical-align: middle;
           }
         }
 
