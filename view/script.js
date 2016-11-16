@@ -307,7 +307,7 @@ function generateCard(drive) {
   }
 
   // Make adding stops possible.
-  let addNewStopElement = isEditing ? "<div class='addButtonContainer'><button class='addStopButton mdl-button mdl-js-button mdl-button--icon'><i class='material-icons'>add_circle</i></button></div><br>" : "";
+  let addNewStopButton = isEditing ? "<div class='addButtonContainer'><button class='addStopButton mdl-button mdl-js-button mdl-button--icon'><i class='material-icons'>add_circle</i></button></div><br>" : "";
 
   // Create an HTML entry.
   var card = $("\
@@ -324,7 +324,7 @@ function generateCard(drive) {
             <label class='mdl-textfield__label' for='drive__route--from--input'>Von</label>\
           </div>\
           " + stopsHtml + "\
-          " + addNewStopElement + "\
+          " + addNewStopButton + "\
           <div class='drive__route--to mdl-textfield mdl-js-textfield'>\
              <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='to' id='drive__route--to--input' value='" + to + "' " + disabledHtml + ">\
             <label class='mdl-textfield__label' for='drive__route--to--input'>Nach</label>\
@@ -354,7 +354,7 @@ function generateCard(drive) {
           <div class='drive__author mdl-textfield mdl-js-textfield'>\
             <i class='material-icons'>person</i>\
             <input size='28' class='mdl-textfield__input' type='text' name='name' id='drive__author--input' value='" + drive['contact']['name'] + "' " + disabledHtml + ">\
-            <label class='mdl-textfield__label' for='drive__author--input'>Fahrer</label>\
+            <label class='mdl-textfield__label' for='drive__author--input'>FahrerIn</label>\
           </div>\
           <br>\
           <div class='drive__mail mdl-textfield mdl-js-textfield'>\
@@ -398,12 +398,23 @@ function display(drives) {
       // Add buttons.
       let actions = card.find(".mdl-card__actions").first();
       let buttons = [];
+
       // Editing mode.
       if (drives[i].editing == true) {
-        let buttonOk = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Hinzufügen</a>");
+        let buttonOk = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Speichern</a>");
+        buttonOk.click(function() {
+          let input = gatherInput(drives[i]);
+          let isInputSane = checkInput(input);
+          if (!isInputSane) {
+            return;
+          } else {
+            console.log("ok");
+          }
+        });
         buttons.push(buttonOk);
         let buttonCancel = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Abbrechen</a>");
         buttons.push(buttonCancel);
+
       // Viewing mode.
       } else {
         // Append show on map button.
@@ -553,52 +564,29 @@ function onEditButton(editButton, index) {
   }
 }
 
-/** Enable or disable the input fields on the ith row. */
-function setTextFields(index, disabled) {
-  var rows = $("#drives-table--body").children();
-  var currentRow = rows.first();
-  for (let i = 0; i < rows.length; i++) {
-    if (i == index) {
-      var currentField = currentRow.children().first();
-      for (let i = 0; i < 7; i++) {
-        currentField.children().first().prop('disabled', disabled);
-        currentField = currentField.next();
-      }
-    } else {
-      currentRow.toggleClass('disabled', !disabled);
-    }
-    currentRow = $(currentRow).next();
-  }
-}
-
-/** Returns ith row's <tr> element. */
-function getRow(index) {
-  return $("#drives-table--body").children().eq(index);
-}
-
-function attemptAdd(button) {
-  let position = loadedDrives == null ? 0 : loadedDrives.length;
-  if (!checkInput(position))
-    return;
-  var password = prompt("Bitte geben Sie ein Passwort ein. Nur damit kann der Eintrag geändert oder gelöscht werden.", "");
-  if (password != null) {
-    var drive = gatherInputFromIndex(position);
-    drive['password'] = password;
-    $.ajax({
-      url: url,
-      type: 'POST',
-      data: JSON.stringify(drive, null, 2),
-      success: function(result) {
-        console.log(result);
-        showSnackbarMsg("Eintrag hinzugefügt.")
-        getDrives();
-      },
-      error: function(result) {
-        console.debug("Error: " + JSON.stringify(result, null, 4));
-        showSnackbarMsg("Ein Fehler ist aufgetreten.")
-      }
-    });
-  }
+function attemptAdd(drive) {
+  // let position = loadedDrives == null ? 0 : loadedDrives.length;
+  // if (!checkInput(position))
+  //   return;
+  // var password = prompt("Bitte geben Sie ein Passwort ein. Nur damit kann der Eintrag geändert oder gelöscht werden.", "");
+  // if (password != null) {
+  //   var drive = gatherInputFromIndex(position);
+  //   drive['password'] = password;
+  //   $.ajax({
+  //     url: url,
+  //     type: 'POST',
+  //     data: JSON.stringify(drive, null, 2),
+  //     success: function(result) {
+  //       console.log(result);
+  //       showSnackbarMsg("Eintrag hinzugefügt.")
+  //       getDrives();
+  //     },
+  //     error: function(result) {
+  //       console.debug("Error: " + JSON.stringify(result, null, 4));
+  //       showSnackbarMsg("Ein Fehler ist aufgetreten.")
+  //     }
+  //   });
+  // }
 }
 
 /** Asks for user password and sends out an HTTP PUT request. */
@@ -627,63 +615,68 @@ function attemptEdit(editButton, index) {
   }
 }
 
-function gatherInputFromRow(row) {
-  return loadedDrives[$(row).index()];
+function gatherInput(drive) {
+  let card = $("#" + drive.id);
+  let form = card.find("form").first();
+  let data = form.serializeArray().reduce(function(obj, item) {
+    obj[item.name] = item.value;
+    return obj;
+  }, {});
+  return data;
 }
 
-/** Gathers all drive info on ith row and returns it as an object. */
-function gatherInputFromIndex(index) {
-  return gatherInputFromRow(getRow(index));
+function validEmail(v) {
+    var r = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+    return (v.match(r) == null) ? false : true;
 }
 
-/** Checks a row for sane input. */
-function checkInput(index) {
-  var drive = gatherInputFromIndex(index);
-  var row = getRow(index);
-  var errorOccurred = false;
-  // Check all these that are expected to contain strings.
-  var compulsory = ['author', 'from', 'to', 'contact', 'dateDue'];
-  compulsory.forEach(function(field) {
-    if (drive[field] == "") {
-      row.children(".drives-table--" + field).first().children().first().addClass('missing');
-      errorOccurred = true;
-    } else {
-      row.children(".drives-table--" + field).first().children().first().removeClass('missing');
+function validPhone(number) {
+  var regex = new RegExp("[0-9\-\(\)\s]+.");
+  return (number.match(regex) == null) ? false : true;
+}
+
+/** Checks for sane input. */
+function checkInput(input) {
+  // Check all those that are expected to contain strings.
+  var compulsory = ['name', 'from', 'to'];
+  var description = ['Name des Fahrers', 'Abfahrtsort', 'Zielort'];
+  for (let i = 0; i < compulsory.length; i++) {
+    if (input[compulsory[i]] === "") {
+      showSnackbarMsg("Es fehlt der Eintrag für \"" + description[i] + "\".");
+      return false;
     }
-  });
+  }
 
   // Check if there's a number as seats left.
-  if (isNaN(drive['seatsleft'])) {
-    row.children(".drives-table--seatsleft").first().children().first().addClass('missing');
-    errorOccurred = true;
+  if (isNaN(input['seatsleft'])) {
+    showSnackbarMsg("Es muss mindestens 1 Platz frei sein!");
+    return false;
   } else {
-    if (drive['seatsleft'] < 0) {
-      row.children(".drives-table--seatsleft").first().children().first().addClass('missing');
-      errorOccurred = true;
-    } else {
-      row.children(".drives-table--seatsleft").first().children().first().removeClass('missing');
+    if (input['seatsleft'] <= 0) {
+      showSnackbarMsg("Es muss mindestens 1 Platz frei sein!");
+      return false;
     }
   }
 
-  if (!Date.parse(row.children(".drives-table--dateDue").first().children().first().val())) {
-    row.children(".drives-table--dateDue").first().children().first().addClass('missing');
-    errorOccurred = true;
-  } else {
-    var pickedDate = Date.parse(row.children(".drives-table--dateDue").first().children().first().val());
-    var yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (pickedDate < yesterday) {
-      row.children(".drives-table--dateDue").first().children().first().addClass('missing');
-      errorOccurred = true;
-    } else {
-      row.children(".drives-table--dateDue").first().children().first().removeClass('missing');
-    }
-  }
-
-  if (errorOccurred) {
-    showSnackbarMsg("Überprüfen Sie die rot markierten Felder!");
+  if (input['mail'] == "" && input['phone'] == "") {
+    showSnackbarMsg("Mindestens eine Kontaktmöglichkeit muss angegeben werden!");
     return false;
   }
+
+  if (input['mail'] != "") {
+    if (!validEmail(input['mail'])) {
+      showSnackbarMsg("Die Emailadresse sieht nicht gültig aus!");
+      return false;
+    }
+  }
+
+  if (input['phone'] != "") {
+    if (!validPhone(input['phone'])) {
+      showSnackbarMsg("Die Telefonnummer sieht nicht gültig aus!");
+      return false;
+    }
+  }
+
   return true;
 }
 
