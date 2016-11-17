@@ -440,6 +440,7 @@ function onAddButton() {
   newDrive.id = "newDrive";
   newDrive.dateDue = moment().add(1, 'day').format('YYYY-MM-DD');
   newDrive.editing = true;
+  editingMode = true;
   // Set up an array of drives to display.
   drives = [];
   // Put the new drive first.
