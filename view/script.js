@@ -239,8 +239,7 @@ function generateCard(drive) {
           </div>\
           <hr>\
           <div class='drive__description mdl-textfield mdl-js-textfield'>\
-            <textarea class='mdl-textfield__input' type='text' rows='4' " + disabledHtml + ">Lorem ipsum dolor sit amet, consectetur adipiscing elit.\
-              Aenan convallis.</textarea>\
+            <textarea class='mdl-textfield__input' type='text' rows='4' " + disabledHtml + ">" + drive['description'] + "</textarea>\
           </div>\
           <br>\
         </form>\
@@ -415,6 +414,7 @@ function inputToDrive(data) {
   drive.to = data["to"];
   drive.seatsleft = data["seatsleft"];
   drive.stops = data["stops"];
+  drive.description = data["description"];
   return drive;
 }
 
@@ -430,6 +430,7 @@ function createEmptyDrive() {
     "to":{"name":"", "placeId":""},
     "password":"",
     "seatsleft":1,
+    "description":"",
     stops:[]
   };
 }
@@ -467,8 +468,8 @@ function attemptDelete(drive) {
         getDrives();
       },
       error: function(result) {
-        console.debug("Error: " + JSON.stringify(result, null, 4));
-        showSnackbarMsg("Ein Fehler ist aufgetreten.")
+        console.debug(result);
+        showSnackbarMsg("Fehler: " + result.responseText);
       }
     });
   }
@@ -489,8 +490,8 @@ function attemptAdd(drive) {
         getDrives();
       },
       error: function(result) {
-        console.debug("Error: " + JSON.stringify(result, null, 4));
-        showSnackbarMsg("Ein Fehler ist aufgetreten.")
+        console.debug(result);
+        showSnackbarMsg("Fehler: " + result.responseText);
       }
     });
   }
@@ -511,8 +512,8 @@ function attemptEdit(drive) {
         getDrives();
       },
       error: function(result) {
-        console.debug("Error: " + JSON.stringify(result, null, 4));
-        showSnackbarMsg("Ein Fehler ist aufgetreten. Haben Sie vielleicht ein falsches Passwort eingegeben?")
+        console.debug(result);
+        showSnackbarMsg("Fehler: " + result.responseText);
       }
     });
   }
@@ -532,6 +533,7 @@ function gatherInput(drive) {
   data['to'] = {"name":placeDestination["name"], "placeId":placeDestination["id"]};
   data['stops'] = waypoints;
   data['seatsleft'] = parseInt(data['seatsleft']);
+  data['description'] = card.find(".drive__description").first().children("textarea").first().val();  
   return data;
 }
 
@@ -550,8 +552,8 @@ function validPhone(number) {
 /** Checks for sane input. */
 function checkInput(input) {
   // Check all those that are expected to contain strings.
-  var compulsory = ['name', 'from', 'to'];
-  var description = ['Name des Fahrers', 'Abfahrtsort', 'Zielort'];
+  var compulsory = ['name', 'from', 'to', 'description'];
+  var description = ['Name des Fahrers', 'Abfahrtsort', 'Zielort', 'Beschreibung'];
   for (let i = 0; i < compulsory.length; i++) {
     if (input[compulsory[i]] === "") {
       showSnackbarMsg("Es fehlt der Eintrag für \"" + description[i] + "\".");
