@@ -23,6 +23,7 @@ type Drive struct {
   DateCreated time.Time `json:"dateCreated"`
   DateModified time.Time `json:"dateModified"`
   DateDue time.Time `json:"dateDue"`
+  Description string `json:"description"`
 }
 
 type Place struct {

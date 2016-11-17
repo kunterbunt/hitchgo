@@ -7,6 +7,7 @@ import (
     "time"
     "log"
     "os"
+    "errors"
 )
 
 /**
@@ -42,6 +43,7 @@ type httpParameters struct {
     SeatsLeft int
     Contact model.Contact
     DateCreated, DateModified, DateDue time.Time
+    Description string
 }
 func (this *DriveController) parseHttpParameters(request *http.Request) (parameters httpParameters, err error) {
   // Decode JSON parameters from HTTP body.
@@ -50,21 +52,37 @@ func (this *DriveController) parseHttpParameters(request *http.Request) (paramet
 	return parameters, err
 }
 
-func (this *DriveController) CheckPassword(writer http.ResponseWriter, password string, id string) *model.Drive {
+func (this *DriveController) CheckPassword(writer http.ResponseWriter, password string, id string) (*model.Drive, error) {
   // Get currently saved drive from database.
   drive, err := this.model.GetDrive(id)
   if err != nil {
-    this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
+    return nil, err
   }
-  if drive.Password != password {
-    this.errorMsg(writer, "Invalid password.", http.StatusBadRequest)
+  if drive.Password != password {    
+    return nil, errors.New("Invalid password")
   }
-  return drive
+  return drive, nil
 }
 
-// func (this *DriveController) checkForMissingParameters(parameters httpParameters, required ...string) (err error) {
-//
-// }
+func (this *DriveController) checkForMissingParameters(parameters httpParameters, required []string) error {
+  for i := 0; i < len(required); i++ {
+    switch(required[i]) {
+    case "id":          if len(parameters.Id) == 0 {return errors.New("'" + required[i] + "' is missing.")}
+    case "contact":     if len(parameters.Contact.Name) == 0 {return errors.New("'" + required[i] + "' is missing.")}
+    case "from":        if len(parameters.From.Name) == 0 {return errors.New("'" + required[i] + "' is missing.")}
+    case "to":          if len(parameters.From.Name) == 0 {return errors.New("'" + required[i] + "' is missing.")}
+    case "stops":       if len(parameters.Stops) == 0 {return errors.New("'" + required[i] + "' is missing.")}
+    case "password":    if len(parameters.Password) == 0 {return errors.New("'" + required[i] + "' is missing.")}
+    case "description": if len(parameters.Description) == 0 {return errors.New("'" + required[i] + "' is missing.")}
+    case "datedue":     if parameters.DateDue == *new(time.Time) {return errors.New("'" + required[i] + "' is missing.")}
+    case "datecreated": if parameters.DateCreated == *new(time.Time) {return errors.New("'" + required[i] + "' is missing.")}
+    case "datemodified":if parameters.DateModified == *new(time.Time) {return errors.New("'" + required[i] + "' is missing.")}
+    default:            this.logger.Println("Unrecoginized required parameter: " + required[i])
+                        return errors.New("Unrecoginized required parameter: " + required[i])
+    }
+  }
+  return nil
+}
 
 func (this *DriveController) Get(writer http.ResponseWriter, request *http.Request) {
     this.logger.Println("GET Request")
@@ -114,46 +132,15 @@ func (this *DriveController) Post(writer http.ResponseWriter, request *http.Requ
         return
     }
     // Check if all needed parameters are present and sane.
-    // Author provided?
-    // if len(parameters.Author) == 0 {
-    //     this.errorMsg(writer, "Invalid request: 'author' missing.", http.StatusBadRequest)
-    //     return
-    // }
-    // Contact provided?
-    if len(parameters.Contact.Name) == 0 {
-        this.errorMsg(writer, "Invalid request: 'contact' missing.", http.StatusBadRequest)
-        return
-    }
-    // From provided?
-    if len(parameters.From.Name) == 0 {
-        this.errorMsg(writer, "Invalid request: 'from' missing.", http.StatusBadRequest)
-        return
-    }
-    // To provided?
-    if len(parameters.To.Name) == 0 {
-        this.errorMsg(writer, "Invalid request: 'to' missing.", http.StatusBadRequest)
-        return
-    }
-    // Stops provided?
-    if len(parameters.Stops) == 0 {
-        this.errorMsg(writer, "Invalid request: 'stops' missing.", http.StatusBadRequest)
-        return
-    }
-    // Password provided?
-    if len(parameters.Password) == 0 {
-        this.errorMsg(writer, "Invalid request: 'password' missing.", http.StatusBadRequest)
-        return
-    }
-
-    // DateDue provided?
-    zeroTime := time.Time{}
-    if parameters.DateDue == zeroTime {
-        this.errorMsg(writer, "Invalid request: 'dateDue' missing.", http.StatusBadRequest)
-        return
+    required := [...]string{"contact", "from", "to", "stops", "password", "datedue", "description"}
+    err = this.checkForMissingParameters(parameters, required[:])
+    if err != nil {
+      this.errorMsg(writer, err.Error(), http.StatusBadRequest)
+      return
     }
 
     drive := model.Drive{"", parameters.Contact, parameters.From, parameters.Stops, parameters.To,
-                          parameters.SeatsLeft, parameters.Password, time.Now(), time.Now(), parameters.DateDue}
+                          parameters.SeatsLeft, parameters.Password, time.Now(), time.Now(), parameters.DateDue, parameters.Description}
 
     // Send to model.
     err = this.model.AddDrive(&drive)
@@ -173,52 +160,21 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
         this.errorMsg(writer, "Error parsing HTTP request body: " + err.Error(), http.StatusBadRequest)
         return
     }
-    // Check if Id is provided.
-    if len(parameters.Id) == 0 {
-        this.errorMsg(writer, "Invalid request: 'id' missing.", http.StatusBadRequest)
-        return
-    }
-    // Author provided?
-    // if len(parameters.Author) == 0 {
-    //     this.errorMsg(writer, "Invalid request: 'author' missing.", http.StatusBadRequest)
-    //     return
-    // }
-    // Contact provided?
-    if len(parameters.Contact.Name) == 0 {
-        this.errorMsg(writer, "Invalid request: 'contact' missing.", http.StatusBadRequest)
-        return
-    }
-    // From provided?
-    if len(parameters.From.Name) == 0 {
-        this.errorMsg(writer, "Invalid request: 'from' missing.", http.StatusBadRequest)
-        return
-    }
-    // To provided?
-    if len(parameters.To.Name) == 0 {
-        this.errorMsg(writer, "Invalid request: 'to' missing.", http.StatusBadRequest)
-        return
-    }
-    // Stops provided?
-    if len(parameters.Stops) == 0 {
-        this.errorMsg(writer, "Invalid request: 'stops missing.", http.StatusBadRequest)
-        return
-    }
-    // Password provided?
-    if len(parameters.Password) == 0 {
-        this.errorMsg(writer, "Invalid request: 'password missing.", http.StatusBadRequest)
-        return
-    }
-    // DateDue provided?
-    zeroTime := time.Time{}
-    if parameters.DateDue == zeroTime {
-        this.errorMsg(writer, "Invalid request: 'dateDue' missing.", http.StatusBadRequest)
-        return
+    // Check if all needed parameters are present and sane.
+    required := [...]string{"id", "contact", "from", "to", "stops", "password", "datedue", "description"}
+    err = this.checkForMissingParameters(parameters, required[:])
+    if err != nil {
+      this.errorMsg(writer, err.Error(), http.StatusBadRequest)
+      return
     }
 
-    drive := this.CheckPassword(writer, parameters.Password, parameters.Id)
+    drive, err := this.CheckPassword(writer, parameters.Password, parameters.Id)
+    if err != nil {
+      this.errorMsg(writer, err.Error(), http.StatusBadRequest)
+      return
+    }
 
     // Update values.
-    // drive.Author = parameters.Author
     drive.Contact = parameters.Contact
     drive.From = parameters.From
     drive.Stops = parameters.Stops
@@ -226,6 +182,7 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
     drive.SeatsLeft = parameters.SeatsLeft
     drive.DateModified = time.Now()
     drive.DateDue = parameters.DateDue
+    drive.Description = parameters.Description
 
     // Send to model.
     err = this.model.UpdateDrive(drive)
@@ -245,21 +202,15 @@ func (this *DriveController) Delete(writer http.ResponseWriter, request *http.Re
         this.errorMsg(writer, "Error parsing HTTP request body: " + err.Error(), http.StatusBadRequest)
         return
     }
-    // Check for ID field.
-    if len(parameters.Id) == 0 {
-        this.errorMsg(writer, "Invalid request: 'id' missing.", http.StatusBadRequest)
-        return
-    }
-    // Check password.
-    drive, err := this.model.GetDrive(parameters.Id)
+    // Check if all needed parameters are present and sane.
+    required := [...]string{"id", "password"}
+    err = this.checkForMissingParameters(parameters, required[:])
     if err != nil {
-        this.errorMsg(writer, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    if drive.Password != parameters.Password {
-      this.errorMsg(writer, "Invalid password.", http.StatusBadRequest)
+      this.errorMsg(writer, err.Error(), http.StatusBadRequest)
       return
     }
+    // Check password.
+    this.CheckPassword(writer, parameters.Password, parameters.Id)
     // Tell model to remove drive.
     err = this.model.RemoveDrive(parameters.Id)
     if err != nil {
