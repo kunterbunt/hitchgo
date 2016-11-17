@@ -347,11 +347,19 @@ function display(drives) {
             return;
           } else {
             drives[i] = inputToDrive(input);
-            attemptAdd(drives[i]);
+            if (drives[i].id === "newDrive") {
+              attemptAdd(drives[i]);
+            } else {
+              attemptEdit(drives[i]);
+            }
           }
         });
         buttons.push(buttonOk);
         let buttonCancel = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Abbrechen</a>");
+        buttonCancel.click(function() {
+          drives[i].editing = false;
+          display(drives);
+        });
         buttons.push(buttonCancel);
 
       // ... for viewing mode.
@@ -362,7 +370,7 @@ function display(drives) {
         </a>");
         buttonMap.click(function() {
           $(".mdl-layout__content").animate({scrollTop:0}, 350, "swing");
-          onDriveClick(drives[i]);
+          showOnMap(drives[i]);
         });
         buttons.push(buttonMap);
 
@@ -370,6 +378,11 @@ function display(drives) {
         let buttonEdit = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
           Bearbeiten\
           </a>");
+        buttonEdit.click(function() {
+          drives[i].editing = true;
+          showOnMap(drives[i]);
+          display(drives);
+        });
         buttons.push(buttonEdit);
 
         // Append delete button.
@@ -500,8 +513,6 @@ function attemptAdd(drive) {
   var password = prompt("Bitte geben Sie ein Passwort ein. Nur damit kann der Eintrag geändert oder gelöscht werden.", "");
   if (password != null) {
     drive['password'] = password;
-    console.debug(drive);
-    console.debug(JSON.stringify(drive));
     $.ajax({
       url: url,
       type: 'POST',
@@ -520,12 +531,9 @@ function attemptAdd(drive) {
 }
 
 /** Asks for user password and sends out an HTTP PUT request. */
-function attemptEdit(editButton, index) {
-  if (!checkInput(index))
-    return;
+function attemptEdit(drive) {
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
-    var drive = gatherInputFromIndex(index);
     drive['password'] = password;
     $.ajax({
       url: url,
@@ -533,8 +541,7 @@ function attemptEdit(editButton, index) {
       data: JSON.stringify(drive, null, 2),
       success: function(result) {
         console.log(result);
-        showSnackbarMsg("Eintrag geändert.")
-        onEditButton(editButton, index);
+        showSnackbarMsg("Eintrag geändert.")        
         getDrives();
       },
       error: function(result) {
@@ -657,8 +664,4 @@ function getEditButton(index) {
 function getDeleteButton(index) {
   var row = getRow(index);
   return $(row).children("td").children(".deleteButton, .cancelButton").first().parent();
-}
-
-function onDriveClick(drive) {
-  showOnMap(drive);
 }
