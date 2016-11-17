@@ -59,7 +59,12 @@ $lightgray: #E0E0E0;
       .drive {
         background-color: #F5F5F5;
         &.editing {
-          @include box-shadow(0, 0, 10px, rgba(255,110,64,1));
+          @include box-shadow(0, 0, 10px, black);
+        }
+        .mdl-button {
+          &.disabled {
+            color: $gray;
+          }
         }
         .mdl-card__title {
           color: black;
@@ -80,7 +85,7 @@ $lightgray: #E0E0E0;
           top: -24px;
           padding: 6px 0;
         }
-        .addButtonContainer {          
+        .addButtonContainer {
           position: relative;
           top: -18px;
           .addStopButton {
@@ -153,6 +158,9 @@ $lightgray: #E0E0E0;
 
 .disabled {
   pointer-events: none;
+  &:hover {
+    cursor: not-allowed;
+  }
 }
 
 .hide {

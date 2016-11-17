@@ -71,9 +71,11 @@ footer .mdl-button i {
       .mdl-layout__content .page-content #drives .drive {
         background-color: #F5F5F5; }
         .mdl-layout__content .page-content #drives .drive.editing {
-          -webkit-box-shadow: 0 0 10px #ff6e40;
-          -moz-box-shadow: 0 0 10px #ff6e40;
-          box-shadow: 0 0 10px #ff6e40; }
+          -webkit-box-shadow: 0 0 10px black;
+          -moz-box-shadow: 0 0 10px black;
+          box-shadow: 0 0 10px black; }
+        .mdl-layout__content .page-content #drives .drive .mdl-button.disabled {
+          color: #5b5b5b; }
         .mdl-layout__content .page-content #drives .drive .mdl-card__title {
           color: black;
           border-bottom: 1px solid #5b5b5b; }
@@ -135,6 +137,8 @@ footer .mdl-button i {
 
 .disabled {
   pointer-events: none; }
+  .disabled:hover {
+    cursor: not-allowed; }
 
 .hide {
   display: none; }

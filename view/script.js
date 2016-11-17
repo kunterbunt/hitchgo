@@ -9,24 +9,38 @@ var waypoints = [];
 var travel_mode = 'DRIVING';
 var directionsService = null;
 var directionsDisplay = null;
+var editingMode = false;
 
 jQuery(function($) {
+  // Load drives from the server and display them.
   getDrives();
-  $("#search-button").click(function() {
-    triggerSearch();
-  });
+  // Plus button adds a new drive.
   $("#addCardButton").click(function() {
     onAddButton();
   });
 });
 
+/** Loads drives from the server and displays them. */
+function getDrives() {
+  $.getJSON(url, function(answer) {
+    if (answer != null) {
+      loadedDrives = answer;
+    } else {
+      loadedDrives = [];
+    }
+    display(loadedDrives);
+  });
+}
+
+/** Sets up the map. */
 function initMap() {
-  // Init map.
   map = new google.maps.Map(document.getElementById('map--canvas'), {
     center: {lat: 54.1657, lng: 10.4515},
     zoom: 6,
     mapTypeId: 'roadmap'
   });
+  // Sometimes the map doesn't load until it has been resized.
+  // This workaround attempts to trigger a resize event once the map has loaded.
   google.maps.event.addListenerOnce(map, 'idle', function() {
    google.maps.event.trigger(map, 'resize');
   });
@@ -36,7 +50,8 @@ function initMap() {
   directionsDisplay.setMap(map);
 }
 
-function expandViewportToFitPlace(map, place) {
+/** Focus the map on a place. */
+function expandViewportToFitPlace(place) {
   if (place.geometry.viewport) {
     map.fitBounds(place.geometry.viewport);
   } else {
@@ -45,66 +60,7 @@ function expandViewportToFitPlace(map, place) {
   }
 }
 
-function setupAutocomplete(inputElement, functionToCall) {
-  let autocomplete = new google.maps.places.Autocomplete(inputElement);
-  autocomplete.bindTo('bounds', map);
-  autocomplete.addListener('place_changed', function() {
-    var place = autocomplete.getPlace();
-    if (!place.geometry) {
-      showSnackbarMsg("Ort nicht gefunden: " + place.name);
-      return;
-    }
-    expandViewportToFitPlace(map, place);
-    functionToCall(place.name, place.place_id);
-    triggerSearch();
-  });
-}
-
-function triggerSearch() {
-  // console.log(placeOrigin["name"] + " " + placeDestination["name"]);
-  route(placeOrigin, waypoints, placeDestination, travel_mode, directionsService, directionsDisplay);
-}
-
-var selectFirstOnEnter = function(input){      // store the original event binding function
-    var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
-    function addEventListenerWrapper(type, listener) { // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected, and then trigger the original listener.
-    if (type == "keydown") {
-      var orig_listener = listener;
-      listener = function (event) {
-      var suggestion_selected = $(".pac-item-selected").length > 0;
-        if (event.which == 13 && !suggestion_selected) { var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40}); orig_listener.apply(input, [simulated_downarrow]); }
-        orig_listener.apply(input, [event]);
-      };
-    }
-    _addEventListener.apply(input, [type, listener]); // add the modified listener
-  }
-  if (input.addEventListener) { input.addEventListener = addEventListenerWrapper; } else if (input.attachEvent) { input.attachEvent = addEventListenerWrapper; }
-}
-
-function makeSearchFieldSelectFirstOption(input) {
-  // Store the original event binding function.
-  var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
-  function addEventListenerWrapper(type, listener) {
-    // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
-    // and then trigger the original listener.
-    if (type == "keydown") {
-      var orig_listener = listener;
-      listener = function (event) {
-        var suggestion_selected = $(".pac-item-selected").length > 0;
-        if (event.which == 13 && !suggestion_selected) {
-          var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40})
-          orig_listener.apply(input, [simulated_downarrow]);
-        }
-        orig_listener.apply(input, [event]);
-      };
-    }
-    // Add the modified listener.
-    _addEventListener.apply(input, [type, listener]);
-  }
-  if (input.addEventListener)
-    input.addEventListener = addEventListenerWrapper;
-}
-
+/** Asks a Google server for the route and displays the result on the map. */
 function route(placeOrigin, waypoints, placeDestination, travel_mode, directionsService, directionsDisplay) {
   if (placeOrigin['id'] === "" || placeDestination['id'] === "") {
     return;
@@ -130,6 +86,7 @@ function route(placeOrigin, waypoints, placeDestination, travel_mode, directions
   });
 }
 
+/** Given a drive object, find the route and display it. */
 function showOnMap(drive) {
   placeOrigin['name'] = drive['from']['name'];
   placeOrigin['id'] = drive['from']['placeId'];
@@ -147,17 +104,48 @@ function showOnMap(drive) {
   triggerSearch();
 }
 
-function getDrives() {
-  $.getJSON(url, function(answer) {
-    if (answer != null) {
-      loadedDrives = answer;
-    } else {
-      loadedDrives = [];
+/** Given an HTML input element, turn it into a Google places autocomplete field.
+functionToCall(name, id) is triggered when the field is changed. */
+function setupAutocomplete(inputElement, functionToCall) {
+  let autocomplete = new google.maps.places.Autocomplete(inputElement);
+  autocomplete.bindTo('bounds', map);
+  autocomplete.addListener('place_changed', function() {
+    var place = autocomplete.getPlace();
+    if (!place.geometry) {
+      showSnackbarMsg("Ort nicht gefunden: " + place.name);
+      return;
     }
-    display(loadedDrives);
+    expandViewportToFitPlace(place);
+    functionToCall(place.name, place.place_id);
+    triggerSearch();
   });
 }
 
+/** Convenience method that asks a Google server for the route currently saved in placeOrigin, waypoints, placeDestination. */
+function triggerSearch() {
+  route(placeOrigin, waypoints, placeDestination, travel_mode, directionsService, directionsDisplay);
+}
+
+/** Hacky way of forcing an enter press on a given autocomplete field to select the first suggestion. */
+var selectFirstOnEnter = function(input) {
+  // store the original event binding function
+    var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
+    function addEventListenerWrapper(type, listener) { // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected, and then trigger the original listener.
+    if (type == "keydown") {
+      var orig_listener = listener;
+      listener = function (event) {
+      var suggestion_selected = $(".pac-item-selected").length > 0;
+        if (event.which == 13 && !suggestion_selected) { var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40}); orig_listener.apply(input, [simulated_downarrow]); }
+        orig_listener.apply(input, [event]);
+      };
+    }
+    _addEventListener.apply(input, [type, listener]); // add the modified listener
+  }
+  if (input.addEventListener) { input.addEventListener = addEventListenerWrapper; } else if (input.attachEvent) { input.attachEvent = addEventListenerWrapper; }
+}
+
+/** Generates the HTML entity that describes a drive.
+    Does not include buttons. */
 function generateCard(drive) {
   let isEditing = drive.editing === true;
   let disabledHtml = isEditing ? "" : " disabled='disabled'";
@@ -280,6 +268,7 @@ function generateCard(drive) {
     });
     selectFirstOnEnter(toElement[0]);
 
+    // Do the same for all intermediate stops.
     card.find(".drive__route--via").each(function(index) {
       let viaElement = $(this).find("input").first();
       setupAutocomplete(viaElement[0], function(name, id) {
@@ -295,6 +284,7 @@ function generateCard(drive) {
           });
         }
       });
+      selectFirstOnEnter(viaElement[0]);
     });
 
     // Make the add-stop-button work.
@@ -318,6 +308,7 @@ function generateCard(drive) {
             });
           }
         });
+        selectFirstOnEnter(viaElement[0]);
       });
     });
   }
@@ -325,6 +316,7 @@ function generateCard(drive) {
   return card;
 }
 
+/** Given an array of drives, display them as cards. */
 function display(drives) {
   var drivesContainer = $("#drives");
   drivesContainer.empty();
@@ -355,9 +347,14 @@ function display(drives) {
           }
         });
         buttons.push(buttonOk);
+
         let buttonCancel = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Abbrechen</a>");
         buttonCancel.click(function() {
           drives[i].editing = false;
+          editingMode = false;
+          if (drives[i].id === "newDrive") {
+            drives.splice(i, 1);
+          }
           display(drives);
         });
         buttons.push(buttonCancel);
@@ -380,6 +377,7 @@ function display(drives) {
           </a>");
         buttonEdit.click(function() {
           drives[i].editing = true;
+          editingMode = true;
           showOnMap(drives[i]);
           display(drives);
         });
@@ -395,6 +393,10 @@ function display(drives) {
         buttons.push(buttonDelete);
       }
       buttons.forEach(function(button) {
+        // Disable the buttons if editing mode is active and this is not the drive being edited.
+        if (editingMode && (!drives[i].hasOwnProperty("editing") || drives[i].editing == false)) {
+          button.addClass("disabled");
+        }
         actions.append(button);
       });
       drivesContainer.append(card);
@@ -403,21 +405,20 @@ function display(drives) {
   componentHandler.upgradeDom(); // Tell MDL to update DOM and apply nice styling to all newly added elements.
 }
 
+/** Given the data input on a card's form element, transform it into a drive object. */
 function inputToDrive(data) {
-  return {
-    "id":data["id"],
-    "contact":{"name":data["name"],"mail":data["mail"],"phone":data["phone"]},
-    "dateCreated":moment().format("YYYY-MM-DDTHH:mm:ssZ"),
-    "dateDue":data["dateDue"],
-    "dateModified":moment().format("YYYY-MM-DDTHH:mm:ssZ"),
-    "from":data['from'],
-    "to":data['to'],
-    "password":"",
-    "seatsleft":data["seatsleft"],
-    stops:data['stops']
-  };
+  let drive = createEmptyDrive();
+  drive.id = data["id"];
+  drive.contact = {"name":data["name"],"mail":data["mail"],"phone":data["phone"]};
+  drive.dateDue = data["dateDue"];
+  drive.from = data["from"];
+  drive.to = data["to"];
+  drive.seatsleft = data["seatsleft"];
+  drive.stops = data["stops"];
+  return drive;
 }
 
+/** Creates an empty drive object. */
 function createEmptyDrive() {
   return {
     "id":"",
@@ -433,31 +434,24 @@ function createEmptyDrive() {
   };
 }
 
-function onAddButton(button) {
-  drives = [];
+function onAddButton() {
+  // Create the new drive.
   let newDrive = createEmptyDrive();
-  newDrive.editing = true;
   newDrive.id = "newDrive";
   newDrive.dateDue = moment().add(1, 'day').format('YYYY-MM-DD');
+  newDrive.editing = true;
+  // Set up an array of drives to display.
+  drives = [];
+  // Put the new drive first.
   drives.push(newDrive);
+  // Add all loaded drives.
   for (let i = 0; i < loadedDrives.length; i++)
     drives.push(loadedDrives[i]);
+  // Display them.
   display(drives);
 }
 
-function onCancelButton(cancelButton, index) {
-  var isDisabled = $(cancelButton).children("button").first().prop('disabled');
-  if (isDisabled) {
-    return;
-  }
-  setButton(cancelButton, "<i class='material-icons'>delete</i>", "deleteButton", "cancelButton");
-  $(cancelButton).unbind().click(function() {
-    onDeleteButton(cancelButton);
-  });
-  onEditButton(getEditButton(index), index);
-  fillTable();
-}
-
+/** Sends HTML DELETE request for the given drive. */
 function attemptDelete(drive) {
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
@@ -479,36 +473,7 @@ function attemptDelete(drive) {
   }
 }
 
-/** Edit/Done button click events. */
-function onEditButton(editButton, index) {
-  var isCheckIcon = $(editButton).children().first().html() == '<i class="material-icons">check</i>';
-  // Click on 'done' button.
-  if (isCheckIcon) {
-    // Disable input fields, change to edit button.
-    setTextFields(index, true);
-    setButton(editButton, "<i class='material-icons'>mode_edit</i>", "editButton", "doneButton");
-    // Set its click action to calling this function.
-    $(editButton).unbind().click(function() {
-      onEditButton(editButton, index);
-    });
-  // Click on 'edit' button.
-  } else {
-    // Enable input fields for edit, change done button.
-    setTextFields(index, false);
-    setButton(editButton, "<i class='material-icons'>check</i>", "doneButton", "editButton");
-    // Set its click action to asking for password and eventually sending the HTTP PUT request.
-    $(editButton).unbind().click(function() {
-      attemptEdit(editButton, index);
-    });
-    // Refunction delete button to serve as cancel button.
-    deleteButton = getDeleteButton(index);
-    setButton(deleteButton, "<i class='material-icons'>clear</i>", "cancelButton", "deleteButton");
-    $(deleteButton).unbind().click(function() {
-      onCancelButton(deleteButton, index);
-    });
-  }
-}
-
+/** Sends HTML POST request for the given drive. */
 function attemptAdd(drive) {
   var password = prompt("Bitte geben Sie ein Passwort ein. Nur damit kann der Eintrag geändert oder gelöscht werden.", "");
   if (password != null) {
@@ -530,7 +495,7 @@ function attemptAdd(drive) {
   }
 }
 
-/** Asks for user password and sends out an HTTP PUT request. */
+/** Sends HTML PUT request for the given drive. */
 function attemptEdit(drive) {
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
@@ -541,7 +506,7 @@ function attemptEdit(drive) {
       data: JSON.stringify(drive, null, 2),
       success: function(result) {
         console.log(result);
-        showSnackbarMsg("Eintrag geändert.")        
+        showSnackbarMsg("Eintrag geändert.")
         getDrives();
       },
       error: function(result) {
@@ -552,6 +517,7 @@ function attemptEdit(drive) {
   }
 }
 
+/** Given a drive, finds the corresponding card and extracts all user input data. */
 function gatherInput(drive) {
   let card = $("#" + drive.id);
   let form = card.find("form").first();
@@ -565,15 +531,16 @@ function gatherInput(drive) {
   data['to'] = {"name":placeDestination["name"], "placeId":placeDestination["id"]};
   data['stops'] = waypoints;
   data['seatsleft'] = parseInt(data['seatsleft']);
-  console.debug(data);
   return data;
 }
 
+/** Checks an email address for validity. */
 function validEmail(mail) {
     var regex = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
     return (mail.match(regex) == null) ? false : true;
 }
 
+/** Checks a phone number for validity. */
 function validPhone(number) {
   var regex = new RegExp("[0-9\-\(\)\s]+.");
   return (number.match(regex) == null) ? false : true;
@@ -599,7 +566,7 @@ function checkInput(input) {
     return false;
   }
 
-  // Check if there's a number as seats left.
+  // Check if there's a number as seatsleft.
   if (isNaN(input['seatsleft'])) {
     showSnackbarMsg("Es muss mindestens 1 Platz frei sein!");
     return false;
@@ -632,16 +599,7 @@ function checkInput(input) {
   return true;
 }
 
-/** Change a button's HTML and set classes for default MDL button. */
-function setButton(button, html, classesToAdd, classesToRemove) {
-  if (html != "")
-    $(button).children().first().html(html);
-  if (classesToAdd != "")
-    $(button).children().first().addClass(classesToAdd);
-  if (classesToRemove != "")
-    $(button).children().first().removeClass(classesToRemove);
-}
-
+/** Displays a given string in the snackbar. */
 function showSnackbarMsg(message) {
   var snackbarContainer = document.querySelector('#snackbar');
   var handler = function(event) {
@@ -654,14 +612,4 @@ function showSnackbarMsg(message) {
     actionText: 'Okay'
   };
   snackbarContainer.MaterialSnackbar.showSnackbar(data);
-}
-
-function getEditButton(index) {
-  var row = getRow(index);
-  return $(row).children("td").children(".editButton, .doneButton").first().parent();
-}
-
-function getDeleteButton(index) {
-  var row = getRow(index);
-  return $(row).children("td").children(".deleteButton, .cancelButton").first().parent();
 }
