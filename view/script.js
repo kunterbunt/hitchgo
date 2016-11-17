@@ -109,11 +109,15 @@ function route(placeOrigin, waypoints, placeDestination, travel_mode, directions
   if (placeOrigin['id'] === "" || placeDestination['id'] === "") {
     return;
   }
+  let transformedWaypoints = [];
+  for (let i = 0; i < waypoints.length; i++) {
+    transformedWaypoints.push({location: {placeId: waypoints[i]['placeId']}, stopover: true});
+  }
   directionsService.route({
     origin: {'placeId': placeOrigin['id']},
     destination: {'placeId': placeDestination['id']},
-    waypoints: waypoints,
-    optimizeWaypoints: true,
+    waypoints: transformedWaypoints,
+    optimizeWaypoints: false,
     travelMode: travel_mode
   }, function(response, status) {
     if (status === 'OK') {
@@ -135,8 +139,8 @@ function showOnMap(drive) {
   for (let i = 0; i < drive['stops'].length; i++) {
     if (drive['stops'][i]['name'] !== "") {
       waypoints.push({
-        location: {placeId: drive['stops'][i]['placeId']},
-        stopover: true
+        name: drive['stops'][i]['name'],
+        placeId: drive['stops'][i]['placeId']
       });
     }
   }
@@ -160,14 +164,21 @@ function generateCard(drive) {
   let editingClass = isEditing ? "editing" : "";
   // Gather stops into string.
   let stopsHtml = "<div class='drive--route__stops'>";
-  for (let j = 0; j < drive['stops'].length; j++) {
+  for (var j = 0; j < drive['stops'].length; j++) {
     let name = drive['stops'][j]['name'];
     if (name !== "")
       stopsHtml += "<div class='drive__route--via mdl-textfield mdl-js-textfield'>\
          <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value='" + name + "' " + disabledHtml + ">\
       </div>";
   }
+  // Possibly add an empty field so the user can add another stop.
+  if (isEditing && drive.hasNewStopField === true) {
+    stopsHtml += "<div class='drive__route--via mdl-textfield mdl-js-textfield'>\
+       <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value=''>\
+    </div>";
+  }
   stopsHtml += "</div>";
+
   // Set titles.
   let from = drive['from']['name'];
   let to = drive['to']['name'];
@@ -252,16 +263,62 @@ function generateCard(drive) {
   </div>\
   ");
 
+  // Some extra work needed to make the card editable.
   if (isEditing) {
+    // Set up Google places automcomplete for route fields.
     fromElement = card.find(".drive__route--from").first().find("input").first();
     setupAutocomplete(fromElement[0], function(name, id) {
       placeOrigin['name'] = name;
       placeOrigin['id'] = id;
     });
+    selectFirstOnEnter(fromElement[0]);
+
     toElement = card.find(".drive__route--to").first().find("input").first();
     setupAutocomplete(toElement[0], function(name, id) {
       placeDestination['name'] = name;
       placeDestination['id'] = id;
+    });
+    selectFirstOnEnter(toElement[0]);
+
+    card.find(".drive__route--via").each(function(index) {
+      let viaElement = $(this).find("input").first();
+      setupAutocomplete(viaElement[0], function(name, id) {
+        if (waypoints.length > index) {
+          waypoints[index] = {
+            name: name,
+            placeId: id
+          };
+        } else {
+          waypoints.push({
+            name: name,
+            placeId: id
+          });
+        }
+      });
+    });
+
+    // Make the add-stop-button work.
+    card.find(".addStopButton").first().click(function () {
+      let newField = $("<div class='drive__route--via mdl-textfield mdl-js-textfield'>\
+         <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value=''>\
+      </div>");
+      card.find(".drive--route__stops").first().append(newField);
+      card.find(".drive__route--via").each(function(index) {
+        let viaElement = $(this).find("input").first();
+        setupAutocomplete(viaElement[0], function(name, id) {
+          if (waypoints.length > index) {
+            waypoints[index] = {
+              name: name,
+              placeId: id
+            };
+          } else {
+            waypoints.push({
+              name: name,
+              placeId: id
+            });
+          }
+        });
+      });
     });
   }
 
@@ -276,11 +333,11 @@ function display(drives) {
     for (let i = 0; i < drives.length; i++) {
       // Generate the card.
       let card = generateCard(drives[i]);
-      // Add buttons.
+      // Add buttons...
       let actions = card.find(".mdl-card__actions").first();
       let buttons = [];
 
-      // Editing mode.
+      // ... for editing mode.
       if (drives[i].editing == true) {
         let buttonOk = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Speichern</a>");
         buttonOk.click(function() {
@@ -290,14 +347,14 @@ function display(drives) {
             return;
           } else {
             drives[i] = inputToDrive(input);
-            console.debug(drives[i]);
+            attemptAdd(drives[i]);
           }
         });
         buttons.push(buttonOk);
         let buttonCancel = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>Abbrechen</a>");
         buttons.push(buttonCancel);
 
-      // Viewing mode.
+      // ... for viewing mode.
       } else {
         // Append show on map button.
         let buttonMap = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
@@ -319,6 +376,9 @@ function display(drives) {
         let buttonDelete = $("<a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>\
           Löschen\
         </a>");
+        buttonDelete.click(function() {
+          attemptDelete(drives[i]);
+        });
         buttons.push(buttonDelete);
       }
       buttons.forEach(function(button) {
@@ -330,18 +390,18 @@ function display(drives) {
   componentHandler.upgradeDom(); // Tell MDL to update DOM and apply nice styling to all newly added elements.
 }
 
-function inputToDrive(input) {
+function inputToDrive(data) {
   return {
-    "id":input["id"],
-    "contact":{"name":input["name"],"mail":input["mail"],"phone":input["phone"]},
-    "dateCreated":"",
-    "dateDue":input["dateDue"],
-    "dateModified":"",
-    "from":{"name":input["from"]["name"], "placeId":input["from"]["placeId"]},
-    "to":{"name":input["to"]["name"], "placeId":input["to"]["placeId"]},
+    "id":data["id"],
+    "contact":{"name":data["name"],"mail":data["mail"],"phone":data["phone"]},
+    "dateCreated":moment().format("YYYY-MM-DDTHH:mm:ssZ"),
+    "dateDue":data["dateDue"],
+    "dateModified":moment().format("YYYY-MM-DDTHH:mm:ssZ"),
+    "from":data['from'],
+    "to":data['to'],
     "password":"",
-    "seatsleft":input["seatsleft"],
-    stops:[]
+    "seatsleft":data["seatsleft"],
+    stops:data['stops']
   };
 }
 
@@ -349,13 +409,13 @@ function createEmptyDrive() {
   return {
     "id":"",
     "contact":{"name":"","mail":"","phone":""},
-    "dateCreated":"",
-    "dateDue":"",
-    "dateModified":"",
+    "dateCreated":moment().format("YYYY-MM-DDTHH:mm:ssZ"),
+    "dateDue":moment().format("YYYY-MM-DDTHH:mm:ssZ"),
+    "dateModified":moment().format("YYYY-MM-DDTHH:mm:ssZ"),
     "from":{"name":"", "placeId":""},
     "to":{"name":"", "placeId":""},
     "password":"",
-    "seatsleft":0,
+    "seatsleft":1,
     stops:[]
   };
 }
@@ -385,10 +445,9 @@ function onCancelButton(cancelButton, index) {
   fillTable();
 }
 
-function onDeleteButton(deleteButton, index) {
+function attemptDelete(drive) {
   var password = prompt("Bitte geben Sie Ihr Passwort ein:", "");
   if (password != null) {
-    var drive = gatherInputFromIndex(index);
     var data = {id: drive['id'], password: password};
     $.ajax({
       url: url,
@@ -438,28 +497,26 @@ function onEditButton(editButton, index) {
 }
 
 function attemptAdd(drive) {
-  // let position = loadedDrives == null ? 0 : loadedDrives.length;
-  // if (!checkInput(position))
-  //   return;
-  // var password = prompt("Bitte geben Sie ein Passwort ein. Nur damit kann der Eintrag geändert oder gelöscht werden.", "");
-  // if (password != null) {
-  //   var drive = gatherInputFromIndex(position);
-  //   drive['password'] = password;
-  //   $.ajax({
-  //     url: url,
-  //     type: 'POST',
-  //     data: JSON.stringify(drive, null, 2),
-  //     success: function(result) {
-  //       console.log(result);
-  //       showSnackbarMsg("Eintrag hinzugefügt.")
-  //       getDrives();
-  //     },
-  //     error: function(result) {
-  //       console.debug("Error: " + JSON.stringify(result, null, 4));
-  //       showSnackbarMsg("Ein Fehler ist aufgetreten.")
-  //     }
-  //   });
-  // }
+  var password = prompt("Bitte geben Sie ein Passwort ein. Nur damit kann der Eintrag geändert oder gelöscht werden.", "");
+  if (password != null) {
+    drive['password'] = password;
+    console.debug(drive);
+    console.debug(JSON.stringify(drive));
+    $.ajax({
+      url: url,
+      type: 'POST',
+      data: JSON.stringify(drive),
+      success: function(result) {
+        console.log(result);
+        showSnackbarMsg("Eintrag hinzugefügt.")
+        getDrives();
+      },
+      error: function(result) {
+        console.debug("Error: " + JSON.stringify(result, null, 4));
+        showSnackbarMsg("Ein Fehler ist aufgetreten.")
+      }
+    });
+  }
 }
 
 /** Asks for user password and sends out an HTTP PUT request. */
@@ -495,13 +552,19 @@ function gatherInput(drive) {
     obj[item.name] = item.value;
     return obj;
   }, {});
+  data['dateDue'] = moment(data['dateDue']).format("YYYY-MM-DDTHH:mm:ssZ");
   data['id'] = drive.id;
+  data['from'] = {"name":placeOrigin["name"], "placeId":placeOrigin["id"]};
+  data['to'] = {"name":placeDestination["name"], "placeId":placeDestination["id"]};
+  data['stops'] = waypoints;
+  data['seatsleft'] = parseInt(data['seatsleft']);
+  console.debug(data);
   return data;
 }
 
-function validEmail(v) {
-    var r = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
-    return (v.match(r) == null) ? false : true;
+function validEmail(mail) {
+    var regex = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+    return (mail.match(regex) == null) ? false : true;
 }
 
 function validPhone(number) {
@@ -519,6 +582,14 @@ function checkInput(input) {
       showSnackbarMsg("Es fehlt der Eintrag für \"" + description[i] + "\".");
       return false;
     }
+  }
+  if (input['from']['name'] === '') {
+    showSnackbarMsg("Es fehlt der Abfahrtsort!");
+    return false;
+  }
+  if (input['to']['name'] === '') {
+    showSnackbarMsg("Es fehlt der Zielort!");
+    return false;
   }
 
   // Check if there's a number as seats left.

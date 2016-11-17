@@ -89,7 +89,8 @@ footer .mdl-button i {
           top: -24px;
           padding: 6px 0; }
         .mdl-layout__content .page-content #drives .drive .addButtonContainer {
-          padding-bottom: 8px; }
+          position: relative;
+          top: -18px; }
           .mdl-layout__content .page-content #drives .drive .addButtonContainer .addStopButton {
             vertical-align: middle; }
         .mdl-layout__content .page-content #drives .drive i {
