@@ -1,5 +1,5 @@
-// var url = 'http://www.slowfoodyouthh.de:8080/drives';
-var url = 'http://localhost:8080/drives';
+var url = 'http://www.slowfoodyouthh.de:8080/drives';
+// var url = 'http://localhost:8080/drives';
 var loadedDrives = [];
 var map = null;
 
