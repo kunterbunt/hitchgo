@@ -210,7 +210,12 @@ func (this *DriveController) Delete(writer http.ResponseWriter, request *http.Re
       return
     }
     // Check password.
-    this.CheckPassword(writer, parameters.Password, parameters.Id)
+    _, err = this.CheckPassword(writer, parameters.Password, parameters.Id)
+    if err != nil {
+      this.errorMsg(writer, err.Error(), http.StatusBadRequest)
+      return
+    }
+
     // Tell model to remove drive.
     err = this.model.RemoveDrive(parameters.Id)
     if err != nil {

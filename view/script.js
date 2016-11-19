@@ -1,5 +1,5 @@
-var url = 'http://www.slowfoodyouthh.de:8080/drives';
-//var url = 'http://localhost:8080/drives';
+// var url = 'http://www.slowfoodyouthh.de:8080/drives';
+var url = 'http://localhost:8080/drives';
 var loadedDrives = [];
 var map = null;
 
@@ -199,6 +199,7 @@ function generateCard(drive) {
           </div>\
           <br>\
           <div class='drive__date--departure mdl-textfield mdl-js-textfield'>\
+            <div>Abfahrtstag</div>\
             <i class='material-icons'>date_range</i>\
             <input size='28' class='mdl-textfield__input' type='date' name='dateDue' id='drive__date--departure--input' value='" + moment(drive['dateDue']).format('YYYY-MM-DD') + "' " + disabledHtml + ">\
             <label class='mdl-textfield__label' for='drive__date--departure--input'>Abfahrtszeit</label>\
@@ -206,39 +207,44 @@ function generateCard(drive) {
           </div>\
           <br>\
           <div class='drive__date--departure-time mdl-textfield mdl-js-textfield'>\
+            <div>Abfahrtszeit</div>\
             <i class='material-icons'>access_time</i>\
             <input size='28' class='mdl-textfield__input' type='time' name='timeDue' id='drive__date--departure-time--input' value='" + moment(drive['dateDue']).format('HH:mm:ss') + "' " + disabledHtml + ">\
-            <label class='mdl-textfield__label' for='drive__date--departure-time--input'>Abfahrtszeit</label>\
             <span class='mdl-textfield__error'>Das sieht nicht aus wie eine positive Zahl!</span>\
           </div>\
           <br>\
           <div class='drive__seatsleft mdl-textfield mdl-js-textfield'>\
+            <div>freie Plätze</div>\
             <i class='material-icons'>event_seat</i>\
             <input size='28' class='mdl-textfield__input' type='text' name='seatsleft' id='drive__seatsleft--input' pattern='[0-9]*' value='" + drive['seatsleft'] + "' " + disabledHtml + ">\
-            <label class='mdl-textfield__label' for='drive__seatsleft--input'>#freie Plätze</label>\
+            <label class='mdl-textfield__label' for='drive__seatsleft--input'></label>\
             <span class='mdl-textfield__error'>Das sieht nicht aus wie eine positive Zahl!</span>\
           </div>\
           <br>\
           <div class='drive__author mdl-textfield mdl-js-textfield'>\
+            <div>FahrerIn</div>\
             <i class='material-icons'>person</i>\
             <input size='28' class='mdl-textfield__input' type='text' name='name' id='drive__author--input' value='" + drive['contact']['name'] + "' " + disabledHtml + ">\
-            <label class='mdl-textfield__label' for='drive__author--input'>FahrerIn</label>\
+            <label class='mdl-textfield__label' for='drive__author--input'></label>\
           </div>\
           <br>\
           <div class='drive__mail mdl-textfield mdl-js-textfield'>\
+            <div>Email</div>\
             <i class='material-icons'>email</i>\
             <input size='28' class='mdl-textfield__input' type='email' name='mail' id='drive__mail--input' value='" + drive['contact']['mail'] + "' " + disabledHtml + ">\
-            <label class='mdl-textfield__label' for='drive__mail--input'>Mail</label>\
+            <label class='mdl-textfield__label' for='drive__mail--input'></label>\
             <span class='mdl-textfield__error'>Das sieht nicht aus wie eine Emailadresse!</span>\
           </div>\
           <br>\
           <div class='drive__phone mdl-textfield mdl-js-textfield'>\
+            <div>Telefon</div>\
             <i class='material-icons'>phone</i>\
             <input size='28' class='mdl-textfield__input' type='tel' name='phone' id='drive__phone--input' pattern='-?[0-9]*(\.[0-9]+)?' value='" + drive['contact']['phone'] + "' " + disabledHtml + ">\
-            <label class='mdl-textfield__label' for='drive__phone--input'>Telefon</label>\
+            <label class='mdl-textfield__label' for='drive__phone--input'></label>\
             <span class='mdl-textfield__error'>Das sieht nicht aus wie eine Telefonnummer!</span>\
           </div>\
           <hr>\
+          <div>Beschreibung</div>\
           <div class='drive__description mdl-textfield mdl-js-textfield'>\
             <textarea class='mdl-textfield__input' type='text' rows='4' " + disabledHtml + ">" + drive['description'] + "</textarea>\
           </div>\
