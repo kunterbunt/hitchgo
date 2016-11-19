@@ -127,7 +127,7 @@ function triggerSearch() {
 }
 
 /** Hacky way of forcing an enter press on a given autocomplete field to select the first suggestion. */
-var selectFirstOnEnter = function(input) {
+function selectFirstOnEnter(input) {
   // store the original event binding function
     var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
     function addEventListenerWrapper(type, listener) { // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected, and then trigger the original listener.
@@ -176,7 +176,7 @@ function generateCard(drive) {
   }
 
   // Make adding stops possible.
-  let addNewStopButton = isEditing ? "<div class='addButtonContainer'><button class='addStopButton mdl-button mdl-js-button mdl-button--icon'><i class='material-icons'>add_circle</i></button></div><br>" : "";
+  let addNewStopButton = isEditing ? "<div class='addButtonContainer'><button type='button' class='addStopButton mdl-button mdl-js-button mdl-button--icon'><i class='material-icons'>add_circle</i></button></div><br>" : "";
 
   // Create an HTML entry.
   var card = $("\
@@ -531,7 +531,7 @@ function gatherInput(drive) {
   // Concanete the two departure date and departure time fields.
   let dateDueString = card.find(".drive__date--departure").first().find("input").first().val();
   let timeDueString = card.find(".drive__date--departure-time").first().find("input").first().val();
-  data['dateDue'] = moment(dateDueString + "T" + timeDueString).format("YYYY-MM-DDTHH:mm:ssZ");  
+  data['dateDue'] = moment(dateDueString + "T" + timeDueString).format("YYYY-MM-DDTHH:mm:ssZ");
   // Some things could not be collected through the form.
   data['id'] = drive.id;
   data['from'] = {"name":placeOrigin["name"], "placeId":placeOrigin["id"]};
