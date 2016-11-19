@@ -163,7 +163,7 @@ function generateCard(drive) {
   // Possibly add an empty field so the user can add another stop.
   if (isEditing && drive.hasNewStopField === true) {
     stopsHtml += "<div class='drive__route--via mdl-textfield mdl-js-textfield'>\
-       <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value=''>\
+       " + stopIcon + " <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value=''>\
     </div>";
   }
   stopsHtml += "</div>";
@@ -270,7 +270,12 @@ function generateCard(drive) {
 
     // Do the same for all intermediate stops.
     card.find(".drive__route--via").each(function(index) {
-      let viaElement = $(this).find("input").first();
+      setupStopField(this, index);
+    });
+
+    function setupStopField(field, index) {
+      let viaElement = $(field).find("input").first();
+      selectFirstOnEnter(viaElement[0]);
       setupAutocomplete(viaElement[0], function(name, id) {
         if (waypoints.length > index) {
           waypoints[index] = {
@@ -284,46 +289,36 @@ function generateCard(drive) {
           });
         }
       });
-      selectFirstOnEnter(viaElement[0]);
-    });
+    }
+
+    function setupRemoveStopButton(button, index) {
+      $(button).click(function() {
+        let waypointIndex = $(button).parent().index();
+        if (waypointIndex > -1) {
+          waypoints.splice(waypointIndex, 1);
+          triggerSearch();
+        }
+        $(button).parent().remove();
+      });
+    }
 
     // Make the add stop button work.
     card.find(".addStopButton").first().click(function () {
       let newField = $("<div class='drive__route--via mdl-textfield mdl-js-textfield'>\
-         <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value=''>\
+         " + stopIcon + " <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value=''>\
       </div>");
       card.find(".drive--route__stops").first().append(newField);
       card.find(".drive__route--via").each(function(index) {
-        let viaElement = $(this).find("input").first();
-        selectFirstOnEnter(viaElement[0]);
-        setupAutocomplete(viaElement[0], function(name, id) {
-          if (waypoints.length > index) {
-            waypoints[index] = {
-              name: name,
-              placeId: id
-            };
-          } else {
-            waypoints.push({
-              name: name,
-              placeId: id
-            });
-          }
-        });
+        setupStopField(this, index);
+      });
+      card.find(".removeStopButton").each(function(index) {
+        setupRemoveStopButton(this, index);
       });
     });
 
     // Make the remove stop button work.
     card.find(".removeStopButton").each(function(index) {
-      var waypoint = waypoints[index];
-      $(this).click(function() {
-        waypointIndex = waypoints.indexOf(waypoint);
-        if (waypointIndex > -1) {
-          waypoints.splice(waypointIndex, 1);
-          card.find(".drive__route--via:eq(" + index + ")").remove();
-          triggerSearch();
-        } else
-          console.log("Invalid waypoit index.");
-      });
+      setupRemoveStopButton(this, index);
     });
   }
 
@@ -457,6 +452,9 @@ function onAddButton() {
   newDrive.dateDue = moment().add(1, 'day').format('YYYY-MM-DD');
   newDrive.editing = true;
   editingMode = true;
+  placeOrigin = {"name":"", "id":""};
+  placeDestination = {"name":"", "id":""};
+  waypoints = [];
   // Set up an array of drives to display.
   drives = [];
   // Put the new drive first.
