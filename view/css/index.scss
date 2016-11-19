@@ -57,6 +57,7 @@ $lightgray: #E0E0E0;
     #drives {
       width: 100%;
       .drive {
+        justify-content: center;
         background-color: #F5F5F5;
         &.editing {
           @include box-shadow(0, 0, 10px, black);

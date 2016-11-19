@@ -179,9 +179,9 @@ function generateCard(drive) {
   // Make adding stops possible.
   let addNewStopButton = isEditing ? "<div class='addButtonContainer'><button type='button' class='addStopButton mdl-button mdl-js-button mdl-button--icon'><i class='material-icons'>add_circle</i></button></div><br>" : "";
 
-  // Create an HTML entry.
+  // Create an HTML entry. mdl-cell--hide-desktop
   var card = $("\
-  <div class='mdl-cell mdl-cell--4-col'>\
+  <div class='mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--4-col-phone'>\
     <div id='" + drive['id'] + "' class='drive " + editingClass + " mdl-card mdl-shadow--6dp'>\
       <div class='mdl-card__title mdl-card--expand'>\
         <div class='mdl-card__title-text'><div>" + title + "</div></div>\
