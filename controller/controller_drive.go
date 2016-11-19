@@ -58,7 +58,7 @@ func (this *DriveController) CheckPassword(writer http.ResponseWriter, password 
   if err != nil {
     return nil, err
   }
-  if drive.Password != password {    
+  if drive.Password != password {
     return nil, errors.New("Invalid password")
   }
   return drive, nil
@@ -132,7 +132,7 @@ func (this *DriveController) Post(writer http.ResponseWriter, request *http.Requ
         return
     }
     // Check if all needed parameters are present and sane.
-    required := [...]string{"contact", "from", "to", "stops", "password", "datedue", "description"}
+    required := [...]string{"contact", "from", "to", "password", "datedue", "description"}
     err = this.checkForMissingParameters(parameters, required[:])
     if err != nil {
       this.errorMsg(writer, err.Error(), http.StatusBadRequest)
@@ -161,7 +161,7 @@ func (this *DriveController) Put(writer http.ResponseWriter, request *http.Reque
         return
     }
     // Check if all needed parameters are present and sane.
-    required := [...]string{"id", "contact", "from", "to", "stops", "password", "datedue", "description"}
+    required := [...]string{"id", "contact", "from", "to", "password", "datedue", "description"}
     err = this.checkForMissingParameters(parameters, required[:])
     if err != nil {
       this.errorMsg(writer, err.Error(), http.StatusBadRequest)

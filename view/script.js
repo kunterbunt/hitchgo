@@ -500,6 +500,7 @@ function attemptAdd(drive) {
       success: function(result) {
         console.log(result);
         showSnackbarMsg("Eintrag hinzugefügt.")
+        editingMode = false;
         getDrives();
       },
       error: function(result) {
