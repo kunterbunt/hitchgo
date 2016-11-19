@@ -61,9 +61,11 @@ $lightgray: #E0E0E0;
         &.editing {
           @include box-shadow(0, 0, 10px, black);
         }
-        .mdl-button {
-          &.disabled {
-            color: $gray;
+        .mdl-card__actions {
+          .mdl-button {
+            &.disabled {
+              color: $gray;
+            }
           }
         }
         .mdl-card__title {
@@ -90,6 +92,11 @@ $lightgray: #E0E0E0;
           top: -18px;
           .addStopButton {
             vertical-align: middle;
+          }
+        }
+        .removeStopButton {
+          &:hover {
+            cursor: pointer;
           }
         }
 

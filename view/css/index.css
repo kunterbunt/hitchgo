@@ -74,7 +74,7 @@ footer .mdl-button i {
           -webkit-box-shadow: 0 0 10px black;
           -moz-box-shadow: 0 0 10px black;
           box-shadow: 0 0 10px black; }
-        .mdl-layout__content .page-content #drives .drive .mdl-button.disabled {
+        .mdl-layout__content .page-content #drives .drive .mdl-card__actions .mdl-button.disabled {
           color: #5b5b5b; }
         .mdl-layout__content .page-content #drives .drive .mdl-card__title {
           color: black;
@@ -95,6 +95,8 @@ footer .mdl-button i {
           top: -18px; }
           .mdl-layout__content .page-content #drives .drive .addButtonContainer .addStopButton {
             vertical-align: middle; }
+        .mdl-layout__content .page-content #drives .drive .removeStopButton:hover {
+          cursor: pointer; }
         .mdl-layout__content .page-content #drives .drive i {
           vertical-align: middle;
           width: 24px;

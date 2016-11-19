@@ -152,11 +152,12 @@ function generateCard(drive) {
   let editingClass = isEditing ? "editing" : "";
   // Gather stops into string.
   let stopsHtml = "<div class='drive--route__stops'>";
+  let stopIcon = isEditing ? "<i class='material-icons removeStopButton'>remove_circle_outline</i>" : "<i class='material-icons'>arrow_forward</i>";
   for (var j = 0; j < drive['stops'].length; j++) {
     let name = drive['stops'][j]['name'];
     if (name !== "")
       stopsHtml += "<div class='drive__route--via mdl-textfield mdl-js-textfield'>\
-         <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value='" + name + "' " + disabledHtml + ">\
+         " + stopIcon + " <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value='" + name + "' " + disabledHtml + ">\
       </div>";
   }
   // Possibly add an empty field so the user can add another stop.
@@ -194,7 +195,7 @@ function generateCard(drive) {
           " + stopsHtml + "\
           " + addNewStopButton + "\
           <div class='drive__route--to mdl-textfield mdl-js-textfield'>\
-             <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='to' id='drive__route--to--input' value='" + to + "' " + disabledHtml + ">\
+             <i class='material-icons'>arrow_forward</i> <input size='28' class='mdl-textfield__input' type='text' name='to' id='drive__route--to--input' value='" + to + "' " + disabledHtml + ">\
           </div>\
           <br>\
           <div class='drive__date--departure mdl-textfield mdl-js-textfield'>\
@@ -286,7 +287,7 @@ function generateCard(drive) {
       selectFirstOnEnter(viaElement[0]);
     });
 
-    // Make the add-stop-button work.
+    // Make the add stop button work.
     card.find(".addStopButton").first().click(function () {
       let newField = $("<div class='drive__route--via mdl-textfield mdl-js-textfield'>\
          <i class='material-icons'>&rarr;</i> <input size='28' class='mdl-textfield__input' type='text' name='via" + j + "' id='drive__route--via" + j + "'--input' value=''>\
@@ -307,7 +308,21 @@ function generateCard(drive) {
               placeId: id
             });
           }
-        });        
+        });
+      });
+    });
+
+    // Make the remove stop button work.
+    card.find(".removeStopButton").each(function(index) {
+      var waypoint = waypoints[index];
+      $(this).click(function() {
+        waypointIndex = waypoints.indexOf(waypoint);
+        if (waypointIndex > -1) {
+          waypoints.splice(waypointIndex, 1);
+          card.find(".drive__route--via:eq(" + index + ")").remove();
+          triggerSearch();
+        } else
+          console.log("Invalid waypoit index.");
       });
     });
   }
@@ -509,6 +524,7 @@ function attemptEdit(drive) {
       success: function(result) {
         console.log(result);
         showSnackbarMsg("Eintrag geändert.")
+        editingMode = false;
         getDrives();
       },
       error: function(result) {
