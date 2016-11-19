@@ -361,6 +361,7 @@ function display(drives) {
         buttonCancel.click(function() {
           drives[i].editing = false;
           editingMode = false;
+          setAddButton(true);
           if (drives[i].id === "newDrive") {
             drives.splice(i, 1);
           }
@@ -387,6 +388,7 @@ function display(drives) {
         buttonEdit.click(function() {
           drives[i].editing = true;
           editingMode = true;
+          setAddButton(false);
           showOnMap(drives[i]);
           display(drives);
         });
@@ -445,6 +447,13 @@ function createEmptyDrive() {
   };
 }
 
+function setAddButton(enabled) {
+  if (enabled)
+    $("#addCardButton").removeClass("disabled");
+  else
+    $("#addCardButton").addClass("disabled");
+}
+
 function onAddButton() {
   // Create the new drive.
   let newDrive = createEmptyDrive();
@@ -452,6 +461,7 @@ function onAddButton() {
   newDrive.dateDue = moment().add(1, 'day').format('YYYY-MM-DD');
   newDrive.editing = true;
   editingMode = true;
+  setAddButton(false);
   placeOrigin = {"name":"", "id":""};
   placeDestination = {"name":"", "id":""};
   waypoints = [];
@@ -502,6 +512,7 @@ function attemptAdd(drive) {
         console.log(result);
         showSnackbarMsg("Eintrag hinzugefügt.")
         editingMode = false;
+        setAddButton(true);
         getDrives();
       },
       error: function(result) {
@@ -525,6 +536,7 @@ function attemptEdit(drive) {
         console.log(result);
         showSnackbarMsg("Eintrag geändert.")
         editingMode = false;
+        setAddButton(true);
         getDrives();
       },
       error: function(result) {

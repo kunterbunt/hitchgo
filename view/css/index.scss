@@ -147,6 +147,9 @@ $lightgray: #E0E0E0;
   margin-bottom: 0;
   z-index: 998;
   @include transform(translateZ(0)); // fixes strange Chrome bug: http://stackoverflow.com/questions/11258877/fixed-element-disappears-in-chrome
+  &.disabled {
+    background-color: black;
+  }
 }
 
 .green {

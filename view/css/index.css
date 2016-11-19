@@ -126,6 +126,8 @@ footer .mdl-button i {
   -ms-transform: translateZ(0);
   -webkit-transform: translateZ(0);
   transform: translateZ(0); }
+  .button__add-card.disabled {
+    background-color: black; }
 
 .green {
   background: #00E676; }
