@@ -523,17 +523,24 @@ function attemptEdit(drive) {
 function gatherInput(drive) {
   let card = $("#" + drive.id);
   let form = card.find("form").first();
+  // Use the form to gather all input.
   let data = form.serializeArray().reduce(function(obj, item) {
     obj[item.name] = item.value;
     return obj;
   }, {});
-  data['dateDue'] = moment(data['dateDue']).format("YYYY-MM-DDTHH:mm:ssZ");
+  // Concanete the two departure date and departure time fields.
+  let dateDueString = card.find(".drive__date--departure").first().find("input").first().val();
+  let timeDueString = card.find(".drive__date--departure-time").first().find("input").first().val();
+  data['dateDue'] = moment(dateDueString + "T" + timeDueString).format("YYYY-MM-DDTHH:mm:ssZ");  
+  // Some things could not be collected through the form.
   data['id'] = drive.id;
   data['from'] = {"name":placeOrigin["name"], "placeId":placeOrigin["id"]};
   data['to'] = {"name":placeDestination["name"], "placeId":placeDestination["id"]};
   data['stops'] = waypoints;
+  // Make sure it's an integer, not a string.
   data['seatsleft'] = parseInt(data['seatsleft']);
-  data['description'] = card.find(".drive__description").first().children("textarea").first().val();  
+  // Description area is not part of the form.
+  data['description'] = card.find(".drive__description").first().children("textarea").first().val();
   return data;
 }
 
