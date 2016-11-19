@@ -3,8 +3,8 @@ var url = 'http://localhost:8080/drives';
 var loadedDrives = [];
 var map = null;
 
-var placeOrigin = {"name":"", "id":"", "error":true};
-var placeDestination = {"name":"", "id":"", "error":true};
+var placeOrigin = {"name":"", "id":""};
+var placeDestination = {"name":"", "id":""};
 var waypoints = [];
 var travel_mode = 'DRIVING';
 var directionsService = null;
@@ -35,7 +35,7 @@ function getDrives() {
 /** Sets up the map. */
 function initMap() {
   map = new google.maps.Map(document.getElementById('map--canvas'), {
-    center: {lat: 54.1657, lng: 10.4515},
+    center: {lat: 50.931244, lng: 10.355650}, // Center of Germany.
     zoom: 6,
     mapTypeId: 'roadmap'
   });
@@ -294,6 +294,7 @@ function generateCard(drive) {
       card.find(".drive--route__stops").first().append(newField);
       card.find(".drive__route--via").each(function(index) {
         let viaElement = $(this).find("input").first();
+        selectFirstOnEnter(viaElement[0]);
         setupAutocomplete(viaElement[0], function(name, id) {
           if (waypoints.length > index) {
             waypoints[index] = {
@@ -306,8 +307,7 @@ function generateCard(drive) {
               placeId: id
             });
           }
-        });
-        selectFirstOnEnter(viaElement[0]);
+        });        
       });
     });
   }
