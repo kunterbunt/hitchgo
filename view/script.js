@@ -464,6 +464,7 @@ function onAddButton() {
     drives.push(loadedDrives[i]);
   // Display them.
   display(drives);
+  $(".mdl-layout__content").animate({scrollTop:0}, 350, "swing");
 }
 
 /** Sends HTML DELETE request for the given drive. */
