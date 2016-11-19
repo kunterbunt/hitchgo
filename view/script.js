@@ -148,7 +148,7 @@ function selectFirstOnEnter(input) {
     Does not include buttons. */
 function generateCard(drive) {
   let isEditing = drive.editing === true;
-  let disabledHtml = isEditing ? "" : " disabled='disabled'";
+  let disabledHtml = isEditing ? "" : " readonly";
   let editingClass = isEditing ? "editing" : "";
   // Gather stops into string.
   let stopsHtml = "<div class='drive--route__stops'>";
